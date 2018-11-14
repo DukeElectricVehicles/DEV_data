@@ -90,10 +90,14 @@ typedef struct packet
     }
   }
 
+  #define PLOTTERMODEx
   void printData(packet data) {
-    Serial.print(50); Serial.print('\t');
-    Serial.print(-50); Serial.print('\t');
-//    Serial.print(data.time_ms); Serial.print('\t');
+    #ifdef PLOTTERMODE
+      Serial.print(50); Serial.print('\t'); // faux y-axes
+      Serial.print(-50); Serial.print('\t');
+    #else
+      Serial.print(data.time_ms); Serial.print('\t');
+    #endif
     Serial.print(data.AngleX);  Serial.print('\t');
     Serial.print(data.AngleY);  Serial.print('\t');
     Serial.print(data.AngleZ);  Serial.print('\t');
