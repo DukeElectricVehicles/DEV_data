@@ -5,7 +5,7 @@
 
 #warning "Make sure INA ID is set!"
 #ifndef INA_ID
-  #error "PLEASE DEFINE INA ID"
+  #error "Please set INA ID"
 #endif
 
 static const double CURRENT_CAL_STORE [] = {1,    0.653643,   0.907824,      0}; // resistance in mOhms
@@ -65,7 +65,7 @@ double INAvoltage_V()
 void INAinit()
 {
   uint16_t confReg = ((0100) << 12) | // junk unused
-                     ((000) << 9) |   // averages (1)
+                     ((000) << 9) |   // averages (1) - DO NOT MAKE THIS LONGER UNLESS YOU ARE REALLY CONSTRAINED ON CLOCK CYCLES
                      ((000) << 6) |   // voltage conversion time (140us)
                      ((101) << 3) |   // current conversion time (2.116ms)
                      ((111) << 0);    // continuous voltage and current measurements

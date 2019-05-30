@@ -14,9 +14,9 @@ for i = 1:numel(filesStruct)
     clear linecolor
     if (contains(filename,'_0advance'))
         linecolor = 'k';
-    elseif (contains(filename,'_0advance'))
+    elseif (contains(filename,'_50advance'))
         linecolor = 'b';
-    elseif (contains(filename,'_0advance'))
+    elseif (contains(filename,'_100advance'))
         linecolor = 'r';
     end
     if (~exist('linecolor','var'))
@@ -52,18 +52,20 @@ for i = 1:numel(filesStruct)
     omega_fly = rpm_fly * 2 * pi / 60;
 
     ePower = voltage .* current;
-    ePower = smooth(ePower, 50, 'sgolay');
+    ePower = smooth(ePower, 150, 'sgolay');
 
     accel = gradient(omega_fly)./gradient(time);
 
-    accel = smooth(time, accel, 401, 'sgolay');
+%     accel = smooth(time, accel, 401, 'sgolay');
+    accelInterp = fit(omega_fly, accel, 'smoothingspline', 'SmoothingParam', 0.1);
+    accel = accelInterp(omega_fly);
 
     accelComp = accel - polyval(PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, omega_fly);
 
     torque = ROT_INERTIA .* accelComp;
     mPower = torque .* omega_fly;
     eff = mPower ./ ePower;
-    eff = smooth(eff, 101, 'sgolay');
+%     eff = smooth(eff, 101, 'sgolay');
     
     filename = strrep(filename,'_',' ');
     filename = strrep(filename,',','.');
@@ -85,14 +87,14 @@ for i = 1:numel(filesStruct)
     linkaxes([ax1,ax2],'x');
     
     figure(4);
-    plot(rpm_motor, accel, 'DisplayName',filename); hold on;
+    plot(rpm_motor, accel, linecolor, 'DisplayName',filename); hold on;
     
     figure(5);
     yyaxis left
-    plot(current, rpm_motor, '.', 'DisplayName','RPM','HandleVisibility',legendShow); hold on;
+    plot(current, rpm_motor, [linecolor,'-'], 'DisplayName','RPM','HandleVisibility',legendShow); hold on;
     yyaxis right
-    plot(current, torque/9.81*100, '^', 'DisplayName','Torque (kgf.cm)','HandleVisibility',legendShow); hold on;
-    plot(current, eff*100, '.', 'DisplayName','Efficiency (%)','HandleVisibility',legendShow);
+    plot(current, torque/9.81*100, [linecolor,'^'], 'DisplayName','Torque (kgf.cm)','HandleVisibility',legendShow); hold on;
+    plot(current, eff*100, [linecolor,'.'], 'DisplayName','Efficiency (%)','HandleVisibility',legendShow);
     legendShow = 'off';
 end
 
@@ -130,6 +132,7 @@ xlabel('RPM'); ylabel('Acceleration');
 ylim([0,10]);
 grid on;
 
+%%
 figure(5);
 xlabel('Current'); title('Mitsuba datasheet graph (DEV Controller)'); grid on
 xlim([0,18]);
@@ -138,3 +141,7 @@ yyaxis left
 ylabel('Speed (RPM)'); ylim([0,500]);
 yyaxis right
 ylabel('Torque (kgf.cm) and Efficiency (%)'); ylim([0,100]);
+rectange('Position',[13,20,3,15]
+text(13, 30, '0 advance','Color','k','FontSize',24);
+text(13, 25, '50 advance','Color','b','FontSize',24);
+text(13, 20, '100 advance','Color','r','FontSize',24);

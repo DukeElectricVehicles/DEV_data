@@ -1,0 +1,7 @@
+This DynoMaster code revision is significant because the efficiency suddenly jumped ~3% without any changes to the motor controller.  Thus, I did back-to-back tests with the old/new DynoMaster code to make sure the dyno code was making the difference.
+
+The change is in the sampling of the current/voltage measurements.  Before, it was sampling each every 1ms and averaging over 64 samples resulting in ~140ms user samples!  This is super slow!!!  This causes two sources of error:
+1) moving average has phase lag of about 70ms
+2) power calculation is wrong since mean(V)*mean(I) != mean(IV)
+
+The code was changed to make voltage conversion time as short as possible, current conversion time slightly longer (~2ms) and no internal averaging.  Averaging is done in matlab on power AFTER multiplying raw voltage*current.

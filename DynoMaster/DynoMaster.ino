@@ -58,7 +58,7 @@ void loop() {
   //Main loop delay-----------------------------------------
   uint32_t currentMillis = millis();
   updateINA();
-  if(currentMillis - loopTicker < 10)
+  if(currentMillis - loopTicker < 50)
     return;
 
   loopTicker = currentMillis;
@@ -109,11 +109,11 @@ void printData(uint32_t currentMillis) {
   float velo = currentRPM / 9.5492;//to rad/sec
   float flywheelEnergy = 0.5 * velo * velo * 0.8489;
   
-  Serial.print(InaVoltage_V);
+  Serial.print(InaVoltage_V,3);
   Serial.print(' ');
-  Serial.print(InaCurrent_A);
+  Serial.print(InaCurrent_A,3);
   Serial.print(' ');
-  Serial.print(InaPower_W);
+  Serial.print(InaPower_W,3);
   Serial.print(' ');
   Serial.print(currentRPM);
   Serial.print(' ');
