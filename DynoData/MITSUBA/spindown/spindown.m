@@ -7,7 +7,7 @@ ROT_INERTIA = 0.8489;
 % data = importdata('spindown_VESCon_badSprocket.txt');
 % data = importdata('spindown_noFlywheel/stockHubWheel_outofdyno_disconnected.txt');
 % data = importdata('spindown_noRotor.txt');1
-data = importdata('spindown_noRotor_may28_after.txt');
+data = importdata('spindown_noRotor_may30_after.txt');
 
 voltage = data(:, 1);
 current = data(:, 2);
@@ -28,7 +28,7 @@ velo = rpm_fly * 2 * pi / 60;
 time = data(:, 6) ./ 1000;
 
 accel = gradient(velo)./gradient(time);
-% accel = smooth(accel,16);
+accel = smooth(accel,54);
 accel = smooth(accel,250,'sgolay');
 power = accel * ROT_INERTIA .* velo;
 
@@ -55,10 +55,10 @@ yyaxis left
 plot(rpm_fly); hold on;
 line([startWindow, startWindow], [0, 100], 'Color', 'black', 'LineWidth', 3);
 line([endWindow, endWindow], [0, 100], 'Color', 'red', 'LineWidth', 3);
-yyaxis right
-plot(current.*voltage)
-plot(power)
-ylim([-10,5]);
+% yyaxis right
+% plot(current.*voltage)
+% plot(power)
+% ylim([-10,5]);
 
 veloCut = velo(startWindow:endWindow);
 accelCut = accel(startWindow:endWindow);
@@ -96,6 +96,6 @@ fprintf('\n');
 PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS = coeffs;
 PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM = coeffsLoss
 
-% save('spindown_noRotor_may28_after',...
+% save('spindown_noRotor_may30_after',...
 %     'PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS',...
 %     'PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM');
