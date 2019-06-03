@@ -355,7 +355,7 @@ void readSerial(){
         memset(hallOrder, 0, sizeof(hallOrder));
         setupPWM();
         for (uint8_t i = 0; i<6; i++){
-          float theta = (PI/6) + (PI/3)*i;
+          float theta = (PI/3)*i;
           writePWM(maxPWMtmp*(1+cos(theta)), maxPWMtmp*(1+cos(theta+2*PI/3)), maxPWMtmp*(1+cos(theta+4*PI/3)));
           delay(1000);
           hallISR();
