@@ -15,9 +15,9 @@ for i = 1:numel(filesStruct)
     filename = filesStruct(i).name;
     stuff = sscanf(filename,'8,00mm_%dadvance_%d.txt');
     if (length(stuff)==2)
-        if (stuff(1) ~= 0)
-            continue;
-        end
+%         if (stuff(1) ~= 0)
+%             continue;
+%         end
         allAdvances = [allAdvances, stuff(1)];
     end
 end

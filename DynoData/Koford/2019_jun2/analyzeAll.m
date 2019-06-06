@@ -26,12 +26,12 @@ for i = 1:numel(filesStruct)
     if (length(stuff)~=1)
         continue;
     end
-%     if (str2num(stuff.duty)~=1)
-%         continue;
-%     end
-%     if (length(stuff.comm)~=0)
-%         continue;
-%     end
+    if (str2num(stuff.duty)~=1)
+        continue;
+    end
+    if (length(stuff.comm)~=0)
+        continue;
+    end
 %     if (str2num(stuff.duty)>=0)
 %         continue;
 %     end
@@ -53,6 +53,8 @@ for i = 1:numel(filesStruct)
     end
 end
 
+allRs = [];
+allKv = [];
 for i = 1:numel(filesStruct)
     filename = replace(filesStruct(i).name,',','.');
     stuff = regexp(filename,filenameFormat,'names');
@@ -68,8 +70,13 @@ for i = 1:numel(filesStruct)
     linecolor = allPlotColors{mod(find(ismemberstruct(allParameters,stuff))-1,length(allPlotColors))+1};
     filePath = strcat(filesStruct(i).folder, '/', filesStruct(i).name);
     
-    analyzeSingle(filePath, linecolor, true)
+    [Rs, Kv] = analyzeSingle(filePath, linecolor, true);
+    allRs = [allRs; Rs];
+    allKv = [allKv; Kv];
 end
+
+fprintf('Kv = %.4f +/- %.4f\n', mean(allKv), std(allKv));
+fprintf('Rs = %.4f +/- %.4f\n', mean(allRs), std(allRs));
 
 %%
 figure(1);

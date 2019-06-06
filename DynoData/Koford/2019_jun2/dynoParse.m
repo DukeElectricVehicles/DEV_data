@@ -3,7 +3,8 @@ clear; clc; % close all;
 ROT_INERTIA = 0.8489;
 
 load ../spindown/spindown_noChain_jun2_before % PARASITIC LOSSES
-data = importdata('./PS12V_D1,00_0.txt');
+% data = importdata('./PS12V_D1,00_0.txt');
+data = importdata('./DPStest.txt');
 
 data = data(data(:,2)>.1,:); % current > .1
 badInds = find(data(:,4)>1000 | data(:,2)>18); % sometimes noise causes bad readings at start

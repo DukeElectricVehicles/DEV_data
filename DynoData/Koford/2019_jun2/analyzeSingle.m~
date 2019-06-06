@@ -37,7 +37,7 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
     rpm_fly = smooth(rpm_fly, 150, 'sgolay');
 
 %     rpm_fly = smooth(time, rpm_fly, 1001, 'sgolay', 5);
-    rpm_motor = rpm_fly * 60/13;
+    rpm_motor = rpm_fly * 60/14;
     omega_fly = rpm_fly * 2 * pi / 60;
 
     ePower = voltage .* current;
@@ -61,21 +61,19 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
     
     currCutoff = max(find(current>18));
 %     currOfRPM = polyfit(rpm_motor(currCutoff:end), current(currCutoff:end), 1);
-%     Rs = mean(voltage(currCutoff:end))/currOfRPM(2);
-%     Ke = -currOfRPM(1)*Rs;
-%     Kv = 1/Ke;
-%     R2 = corrcoef(current(currCutoff:end), polyval(currOfRPM, rpm_motor(currCutoff:end)));
-%     R2 = R2(1,2)^2;
-    [CoRV,int,~,~,stats] = regress(current,[rpm_motor,voltage]);
+    [CoRV,int,~,~,stats] = regress(current,[rpm_motor,voltage,ones(size(voltage))]);
     R2 = stats(1);
     assert (R2 > 0.99, 'Kv calculation bad due to excessive nonlinearity\n');
-%     assert (abs(CoRV(3)) < 0, 'y intercept problem');
-    Rs = 1/CoRV(2);
-    Ke = -CoRV(1) * Rs;
-    Kv = 1/Ke;
+    assert (abs(CoRV(3)) < 0, 'y intercept problem');
+    Rs = 
     
+    Rs = mean(voltage(currCutoff:end))/currOfRPM(2);
+    Ke = -currOfRPM(1)*Rs;
+    Kv = 1/Ke;
+    R2 = corrcoef(current(currCutoff:end), polyval(currOfRPM, rpm_motor(currCutoff:end)));
+    R2 = R2(1,2)^2;
     fprintf('%s:\n',filename);
-    fprintf('\tI = '); fprintf('(%.3f)RPM + (%.3f)V', CoRV);
+    fprintf('\tI = '); fprintf('(%.3f)RPM^%d + ', [currOfRPM;length(currOfRPM)-1:-1:0]);
     fprintf('(R2 = %.5f)\n', R2);
     fprintf('\tRs = %.6fohms\n\tKv = %.6f\n',Rs,Kv);
     
@@ -97,7 +95,7 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
         plot(rpm_motor, voltage, [linecolor,'.'], 'DisplayName', filename); hold on;
         ax2 = subplot(2,1,2);
         plot(rpm_motor, current, [linecolor,'.'], 'DisplayName', filename); hold on;
-        plot(rpm_motor, [rpm_motor,voltage]*CoRV, [linecolor,':'], 'DisplayName', filename);
+        plot(rpm_motor, polyval(currOfRPM, rpm_motor), [linecolor,':'], 'DisplayName', filename);
         linkaxes([ax1,ax2],'x');
 
         figure(4);
