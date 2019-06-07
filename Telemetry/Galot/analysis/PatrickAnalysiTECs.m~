@@ -3,9 +3,7 @@
 
 clear; clc; %close all;
 
-% filenames = sprintfc('../spindowns%d.TXT',4);
-% filenames = sprintfc('../racesim1.TXT',0);
-filenames = sprintfc('../cornering1.TXT',0);
+filenames = sprintfc('../spindowns%d.TXT',1:3);
 
 data = zeros(1,12);
 for i = 1:length(filenames)
@@ -17,15 +15,6 @@ for i = 1:length(filenames)
     data = [data; datanew];
 end
     
-%% racesim1
-% data = data(8600:end,:);
-
-% beginInd = find(data(:,4) > 6.7);
-% beginInd = beginInd(1);
-% endInd = 14440;
-% data = data(beginInd:endInd,:);
-
-%%
 %data = importdata('WRRun.TXT');
 %data = data(6100:26460, :);
 
@@ -79,23 +68,15 @@ te = ke + pe;
 mipkwh = (dist ./ 1609) ./ (energy ./ 3.6e6);
 
 windowPoints = PatrickWindow(velo, power, elapsed);
-% windowPoints = [];
 
-dv = gradient(velo);
-dt = gradient(elapsed);
-de = gradient(te);
-accel = dv ./ dt;
-deltaTE = de ./ dt;
-accel = smooth(accel, ACCEL_WINDOW);
-deltaTE = smooth(deltaTE, ACCEL_WINDOW);
-% for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
-%    dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
-%    dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);
-%    de = te(i + ACCEL_WINDOW) - te(i - ACCEL_WINDOW);
-%    
-%    accel(i) = dv / dt;
-%    deltaTE(i) = de / dt;%power in watts
-% end
+for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
+   dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
+   dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);
+   de = te(i + ACCEL_WINDOW) - te(i - ACCEL_WINDOW);
+   
+   accel(i) = dv / dt;
+   deltaTE(i) = de / dt;%power in watts
+end
 
 accelComp = deltaTE ./ (velo * mass);
 
@@ -119,16 +100,11 @@ for window = 1 : size(windowPoints, 1)
    stop = windowPoints(window, 2);
    
    %plot(velo(start:stop), accel(start: stop), 'o','MarkerSize',2); hold on;
-   yyaxis left
    plot(velo(start:stop), accelComp(start: stop), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window)); hold on;
    ylim([-0.2 0.1]); grid on;
-   yyaxis right
-   plot(velo(start:stop), smooth(deltaTE(start:stop), 50), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window));
-   ylim([-25,0]); grid on;
 end
 
 % Plot fit
-yyaxis left
 veloSweep = linspace(0, 10, 1000);
 decelModel = accelModel(veloSweep);
 plot(veloSweep, decelModel, 'DisplayName','target');
@@ -173,13 +149,12 @@ for i = (tpW + 1):(length(totalPower) - tpW)
 end
 
 figure(5); clf;
-a = subplot(2, 1, 1);
+subplot(2, 1, 1);
 plot(dist, totalPower); hold on;
 plot(dist, smooth(power, 51)); grid on;
 ylim([0 150]);
-b = subplot(2, 1, 2);
+subplot(2, 1, 2);
 plot(dist, velo); grid on;
-linkaxes([a,b], 'x');
 
 figure(6);
 scatter3(-x, y, totalPower);
