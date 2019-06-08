@@ -16,7 +16,8 @@ for i = 1:length(filenames)
     data = [data; datanew];
 end
     
-DIST_WINDOW = 30*2*pi;
+radius = 31.7058;
+DIST_WINDOW = radius*2*pi;
 
 
 %CAR MODEL---------------------------
@@ -32,7 +33,7 @@ airForce = @(v) 0.5 * cd * densityAir * frontalArea * v.^2;
 accelModel = @(v) -(rollingForce + airForce(v)) / mass;
 
 %END CAR MODEL-----------------------
-data = data(1000:8000,:);
+% data = data(1000:8000,:);
 
 voltage = data(:, 1);
 current = data(:, 2);
@@ -83,28 +84,29 @@ end
 plot(dist, velo);
 ylim([0,10]);
     
-velo = smooth(velo, 11);
-newVelo = zeros(size(velo));
-usedInds = [];
-for i = 1:length(dist)
-    [~,ind] = min(abs(dist-(dist(i)+DIST_WINDOW)));
-    toAdd = fix((i+ind)/2);
-    if (~any(toAdd==usedInds))
-        usedInds = [usedInds;toAdd];
-        newVelo(usedInds(end)) = mean(velo(i:ind));
-    end
-end
-newVelo = interp1(usedInds, newVelo(usedInds), 1:length(velo), 'nearest');
-velo = newVelo;
-clf;plot(velo);
+% velo = smooth(velo, 11);
+% newVelo = zeros(size(velo));
+% usedInds = [];
+% for i = 1:length(dist)
+%     [~,ind] = min(abs(dist-(dist(i)+DIST_WINDOW)));
+%     toAdd = fix((i+ind)/2);
+%     if (~any(toAdd==usedInds))
+%         usedInds = [usedInds;toAdd];
+%         newVelo(usedInds(end)) = mean(velo(i:ind));
+%     end
+% end
+% newVelo = interp1(usedInds, newVelo(usedInds), 1:length(velo), 'nearest');
+% clf;plot(velo);
+% velo = newVelo;
+% clf;plot(velo);
 
 ke = 0.5 * mass .* (velo .^2);
-pe = mass * 9.8 * altRTK;
+pe = mass * 9.8 * 0;%altRTK;
 
 te = ke + pe;
 mipkwh = (dist ./ 1609) ./ (energy ./ 3.6e6);
 
-windowPoints = PatrickWindow(velo, power, elapsed);
+% windowPoints = PatrickWindow(velo, power, elapsed);
 % windowPoints = [];
 
 dv = gradient(velo);
@@ -112,8 +114,8 @@ dt = gradient(elapsed);
 de = gradient(te);
 accel = dv ./ dt;
 deltaTE = de ./ dt;
-accel = smooth(accel, ACCEL_WINDOW);
-deltaTE = smooth(deltaTE, ACCEL_WINDOW);
+% accel = smooth(accel, ACCEL_WINDOW);
+% deltaTE = smooth(deltaTE, ACCEL_WINDOW);
 % for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
 %    dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
 %    dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);
