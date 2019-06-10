@@ -1,11 +1,10 @@
 %% Patrick Grady
 %  Nov. 2017
+%   Mod: Gerry Chen Jun 7
 
-clear; clc; close all;
+clear; clc; %close all;
 
-% filenames = sprintfc('../spindowns%d.TXT',4);
-filenames = sprintfc('../racesim1.TXT',0);
-%filenames = sprintfc('../cornering1.TXT',0);
+filenames = sprintfc('../cornering1.TXT',0);
 
 data = zeros(1,12);
 for i = 1:length(filenames)
@@ -17,22 +16,9 @@ for i = 1:length(filenames)
     data = [data; datanew];
 end
     
-%% racesim1
-data = data(8600:end,:);
+radius = 31.7058;
+DIST_WINDOW = radius*2*pi;
 
-beginInd = find(data(:,4) > 6.7);
-beginInd = beginInd(1);
-endInd = 14640;
-data = data(beginInd:endInd,:);
-
-%%
-%data = importdata('WRRun.TXT');
-%data = data(6100:26460, :);
-
-%data = importdata('thirdRuns.TXT');
-%data = data(2680:end, :);
-
-ACCEL_WINDOW = 100;
 
 %CAR MODEL---------------------------
 crr = 0.0015;
@@ -47,7 +33,7 @@ airForce = @(v) 0.5 * cd * densityAir * frontalArea * v.^2;
 accelModel = @(v) -(rollingForce + airForce(v)) / mass;
 
 %END CAR MODEL-----------------------
-
+% data = data(1000:8000,:);
 
 voltage = data(:, 1);
 current = data(:, 2);
@@ -65,20 +51,62 @@ dist = dist - dist(1);
 energy = energy - energy(1);
 elapsed = elapsed - elapsed(1);
 
-altRTK = lookupElev(lat, lon);
-altRTK = smooth(altRTK, 11);
-[x, y, z] = geodetic2ned(lat, lon, zeros(size(lat)), 35.322, -78.5111, 0, referenceEllipsoid('GRS80','m'));
-x(abs(x) > 3000) = 0;
-y(abs(y) > 3000) = 0;
+lat(lat==0) = nan;
+lon(lon==0) = nan;
+lat(abs(diff(lat))>0.1) = nan;
+lon(abs(diff(lon))>0.1) = nan;
+lat = lat-mean(lat,'omitnan');
+lon = lon-mean(lon,'omitnan');
+lat(isnan(lat)) = 0;
+lon(isnan(lon)) = 0;
+%%
 
-velo = smooth(velo, 11);
+% altRTK = lookupElev(lat, lon);
+% altRTK = smooth(altRTK, 11);
+% [x, y, z] = geodetic2ned(lat, lon, zeros(size(lat)), 35.322, -78.5111, 0, referenceEllipsoid('GRS80','m'));
+% x(abs(x) > 3000) = 0;
+% y(abs(y) > 3000) = 0;
+
+windowPoints = PatrickWindow(velo, power, elapsed);
+
+clf; plot(dist, velo); hold on;
+velo = zeros(size(velo));
+windowPoints(1:2:end,:) = [];
+for window = windowPoints'
+    [distun, indsun] = unique(dist);
+    indsun(indsun < window(1)) = [];
+    indsun(indsun > window(2)) = [];
+    tspline = spline(dist(indsun), elapsed(indsun));
+    t1s = ppval(tspline, dist(window(1):window(2))+DIST_WINDOW/2);
+    t2s = ppval(tspline, dist(window(1):window(2))-DIST_WINDOW/2);
+    velo(window(1):window(2)) = DIST_WINDOW ./ (t1s - t2s);
+end
+plot(dist, velo);
+ylim([0,10]);
+    
+% velo = smooth(velo, 11);
+% newVelo = zeros(size(velo));
+% usedInds = [];
+% for i = 1:length(dist)
+%     [~,ind] = min(abs(dist-(dist(i)+DIST_WINDOW)));
+%     toAdd = fix((i+ind)/2);
+%     if (~any(toAdd==usedInds))
+%         usedInds = [usedInds;toAdd];
+%         newVelo(usedInds(end)) = mean(velo(i:ind));
+%     end
+% end
+% newVelo = interp1(usedInds, newVelo(usedInds), 1:length(velo), 'nearest');
+% clf;plot(velo);
+% velo = newVelo;
+% clf;plot(velo);
+
 ke = 0.5 * mass .* (velo .^2);
-pe = mass * 9.8 * altRTK;
+pe = mass * 9.8 * 0;%altRTK;
 
 te = ke + pe;
 mipkwh = (dist ./ 1609) ./ (energy ./ 3.6e6);
 
-windowPoints = PatrickWindow(velo, power, elapsed);
+% windowPoints = PatrickWindow(velo, power, elapsed);
 % windowPoints = [];
 
 dv = gradient(velo);
@@ -86,8 +114,8 @@ dt = gradient(elapsed);
 de = gradient(te);
 accel = dv ./ dt;
 deltaTE = de ./ dt;
-accel = smooth(accel, ACCEL_WINDOW);
-deltaTE = smooth(deltaTE, ACCEL_WINDOW);
+% accel = smooth(accel, ACCEL_WINDOW);
+% deltaTE = smooth(deltaTE, ACCEL_WINDOW);
 % for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
 %    dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
 %    dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);

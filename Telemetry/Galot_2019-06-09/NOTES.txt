@@ -1,0 +1,9 @@
+laps1.txt: includes one lap from Olga, then one benchmark lap from Patrick, and a couple of debugging laps from Gerry
+
+laps2.txt: single flying lap by Olga
+
+laps3.txt: two laps by olga, lots of test laps by gerry. problems with relay and BMS browning out. screwed the DPS
+
+laps4.txt: four laps long run olga
+
+laps5.txt: patrick single lap

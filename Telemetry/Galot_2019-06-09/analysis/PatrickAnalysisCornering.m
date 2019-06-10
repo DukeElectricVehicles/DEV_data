@@ -4,8 +4,8 @@
 clear; clc; close all;
 
 % filenames = sprintfc('../spindowns%d.TXT',4);
-filenames = sprintfc('../racesim1.TXT',0);
-%filenames = sprintfc('../cornering1.TXT',0);
+% filenames = sprintfc('../racesim1.TXT',0);
+filenames = sprintfc('../cornering1.TXT',0);
 
 data = zeros(1,12);
 for i = 1:length(filenames)
@@ -16,14 +16,16 @@ for i = 1:length(filenames)
     datanew(:,6) = datanew(:,6) - datanew(1,6) + data(end,6) + 1000; % add time
     data = [data; datanew];
 end
-    
-%% racesim1
-data = data(8600:end,:);
 
-beginInd = find(data(:,4) > 6.7);
-beginInd = beginInd(1);
-endInd = 14640;
-data = data(beginInd:endInd,:);
+%data = data(1693:13410,:);
+
+%% racesim1
+% data = data(8600:end,:);
+
+% beginInd = find(data(:,4) > 6.7);
+% beginInd = beginInd(1);
+% endInd = 14440;
+% data = data(beginInd:endInd,:);
 
 %%
 %data = importdata('WRRun.TXT');
@@ -32,19 +34,25 @@ data = data(beginInd:endInd,:);
 %data = importdata('thirdRuns.TXT');
 %data = data(2680:end, :);
 
-ACCEL_WINDOW = 100;
+DIST_WINDOW = 200;
 
 %CAR MODEL---------------------------
+%crr = 0.0015;
 crr = 0.0015;
 mass = (67 + 21);
+ca = 130;
+cornerRadius = DIST_WINDOW / pi / 2;
 
 densityAir = 1.225;
 frontalArea = 0.353;
 cd = 0.135;
 rollingForce = crr * mass * 9.8;
 airForce = @(v) 0.5 * cd * densityAir * frontalArea * v.^2;
+alpha = @(v) (mass .* v.^2 ./ cornerRadius) ./ ca; %tire slip angle, degrees
+corneringDragForce = @(v) ca .* alpha(v) .^ 2 .* pi ./ 180; %traction force needed
 
-accelModel = @(v) -(rollingForce + airForce(v)) / mass;
+
+accelModel = @(v) -(rollingForce + airForce(v) + corneringDragForce(v)) / mass;
 
 %END CAR MODEL-----------------------
 
@@ -59,45 +67,36 @@ elapsed = data(:, 10) ./ 1000;
 lat = data(:, 11);
 lon = data(:, 12);
 accel = zeros(size(velo));
-deltaTE = zeros(size(velo));
 
 dist = dist - dist(1);
 energy = energy - energy(1);
 elapsed = elapsed - elapsed(1);
 
-altRTK = lookupElev(lat, lon);
-altRTK = smooth(altRTK, 11);
-[x, y, z] = geodetic2ned(lat, lon, zeros(size(lat)), 35.322, -78.5111, 0, referenceEllipsoid('GRS80','m'));
-x(abs(x) > 3000) = 0;
-y(abs(y) > 3000) = 0;
 
 velo = smooth(velo, 11);
-ke = 0.5 * mass .* (velo .^2);
-pe = mass * 9.8 * altRTK;
-
-te = ke + pe;
 mipkwh = (dist ./ 1609) ./ (energy ./ 3.6e6);
 
 windowPoints = PatrickWindow(velo, power, elapsed);
 % windowPoints = [];
 
-dv = gradient(velo);
-dt = gradient(elapsed);
-de = gradient(te);
-accel = dv ./ dt;
-deltaTE = de ./ dt;
-accel = smooth(accel, ACCEL_WINDOW);
-deltaTE = smooth(deltaTE, ACCEL_WINDOW);
-% for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
-%    dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
-%    dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);
-%    de = te(i + ACCEL_WINDOW) - te(i - ACCEL_WINDOW);
-%    
-%    accel(i) = dv / dt;
-%    deltaTE(i) = de / dt;%power in watts
-% end
-
-accelComp = deltaTE ./ (velo * mass);
+%dv = gradient(velo);
+%dt = gradient(elapsed);
+%de = gradient(te);
+%accel = dv ./ dt;
+%deltaTE = de ./ dt;
+%accel = smooth(accel, ACCEL_WINDOW);
+%deltaTE = smooth(deltaTE, ACCEL_WINDOW);
+for i = 100:length(velo-100)
+    curDist = dist(i);
+    [resid, indFirst] = min(abs(dist + DIST_WINDOW / 2 - curDist));
+    [resid, indLast] = min(abs(dist - DIST_WINDOW / 2 - curDist));
+    
+    
+    dv = velo(indLast) - velo(indFirst);
+    dt = elapsed(indLast) - elapsed(indFirst);
+   
+    accel(i) = dv / dt;
+end
 
 %% Plot start/stop lines--------------------------------------------
 figure(1); clf;
@@ -120,10 +119,9 @@ for window = 1 : size(windowPoints, 1)
    
    %plot(velo(start:stop), accel(start: stop), 'o','MarkerSize',2); hold on;
    yyaxis left
-   plot(velo(start:stop), accelComp(start: stop), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window)); hold on;
-   ylim([-0.2 0.1]); grid on;
+   plot(velo(start:stop), accel(start: stop), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window)); hold on;
+   ylim([-0.1 0.0]); grid on;
    yyaxis right
-   plot(velo(start:stop), smooth(deltaTE(start:stop), 50), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window));
    ylim([-25,0]); grid on;
 end
 
@@ -147,7 +145,7 @@ for window = 1 : size(windowPoints, 1)
    
     wLat = lat(start : stop);
     wLon = lon(start : stop);
-    wAccel = accelComp(start : stop);
+    wAccel = accel(start : stop);
     wVelo = velo(start : stop);
 
     %scatter(wLat, wLon, 1, wAccel); %hold on;
@@ -160,27 +158,5 @@ for window = 1 : size(windowPoints, 1)
     zlim([-0.07 0]);
 end
 
-figure(4); clf;
-plot(mipkwh);
-ylim([0 1000]);
-hold on;
-
-totalPower = zeros(size(energy));
-teC = energy - te; %total energy consumed
-tpW = 20;
-for i = (tpW + 1):(length(totalPower) - tpW)
-   totalPower(i) = (teC(i + tpW) - teC(i - tpW)) / (elapsed(i + tpW) - elapsed(i - tpW));
-end
-
-figure(5); clf;
-a = subplot(2, 1, 1);
-plot(dist, totalPower); hold on;
-plot(dist, smooth(power, 51)); grid on;
-ylim([0 150]);
-b = subplot(2, 1, 2);
-plot(dist, velo); grid on;
-linkaxes([a,b], 'x');
-
-figure(6);
-scatter3(-x, y, totalPower);
-zlim([0 100]);
+figure;
+plot(dist, accel);
