@@ -14,10 +14,11 @@ allAdvances = [];
 for i = 1:numel(filesStruct)
     filename = filesStruct(i).name;
     stuff = sscanf(filename,'8,00mm_%dadvance_%d.txt');
+    if (stuff.
     if (length(stuff)==2)
-        if (stuff(1) ~= 0)
-            continue;
-        end
+%         if (stuff(1) ~= 0)
+%             continue;
+%         end
         allAdvances = [allAdvances, stuff(1)];
     end
 end
@@ -83,12 +84,6 @@ for i = 1:numel(filesStruct)
     
     filename = strrep(filename,'_',' ');
     filename = strrep(filename,',','.');
-    
-    effOfRPM = fit(rpm_motor, eff, 'smoothingspline','SmoothingParam', 0.99);
-    ePowerOfRPM = fit(rpm_motor, ePower, 'smoothingspline','SmoothingParam', 0.99);
-    mPowerOfRPM = fit(rpm_motor, mPower, 'smoothingspline','SmoothingParam', 0.99);
-    currentOfRPM = fit(rpm_motor, current, 'smoothingspline','SmoothingParam', 0.99);
-    voltageOfRPM = fit(rpm_motor, voltage, 'smoothingspline','SmoothingParam', 0.99);
     
     figure(1);
 %     yyaxis left

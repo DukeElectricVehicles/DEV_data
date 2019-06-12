@@ -3,10 +3,11 @@ clear; clc; % close all;
 ROT_INERTIA = 0.8489;
 
 load ../spindown/spindown_noChain_jun2_before % PARASITIC LOSSES
-data = importdata('./PS20V_D1,00_0.txt');
+% data = importdata('./PS12V_D1,00_0.txt');
+data = importdata('./CCtest_2A_mansync.txt');
 
 data = data(data(:,2)>.1,:); % current > .1
-badInds = find(data(:,4)>1000 | data(:,2); % sometimes noise causes bad readings at start
+badInds = find(data(:,4)>1000 | data(:,2)>18); % sometimes noise causes bad readings at start
 badInds = [1; badInds];
 startInd = badInds(end)+50;
 data = data(startInd:end-100,:);

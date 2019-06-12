@@ -5,6 +5,7 @@ clear;
 % rpmReal = rpm;
 time = linspace(0,1,1000)';
 rpmReal = 1 - exp(-5*time);
+rpmReal = rpmReal*300;
 rpm = rpmReal + 0.01*(rand(size(time))-.5);
 
 rpmMA = smooth(time, rpm, 54);

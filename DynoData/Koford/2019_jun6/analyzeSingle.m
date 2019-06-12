@@ -1,4 +1,4 @@
-function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot, duty)
+function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
 
     global PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM
     global ROT_INERTIA
@@ -32,22 +32,25 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot, duty)
 %     for glitch = glitches'
 %         rpm_fly(glitch+1) = rpm_fly(glitch);
 %     end
+    rpm_fly(isnan(rpm_fly)) = 0;
     rpm_fly = 1./smooth(1./rpm_fly, 54);
+    rpm_fly = smooth(rpm_fly, 150, 'sgolay');
 
 %     rpm_fly = smooth(time, rpm_fly, 1001, 'sgolay', 5);
-    rpm_motor = rpm_fly * 60/72;
+    rpm_motor = rpm_fly * 60/13;
     omega_fly = rpm_fly * 2 * pi / 60;
 
     ePower = voltage .* current;
-    ePower = smooth(ePower, 54*72/60);
+    ePower = smooth(ePower, 54*14/60);
 %     ePower = smooth(ePower, 500, 'sgolay');
 
-    accel = gradient(omega_fly)./gradient(time);
+    accel = gradient(omega_fly)./smooth(gradient(time),100,'sgolay');
     smooth(accel, 54);
 
 %     accel = smooth(time, accel, 401, 'sgolay');
-    accelInterp = fit(omega_fly, accel, 'smoothingspline', 'SmoothingParam', 0.99);
-    accel = accelInterp(omega_fly);
+%     accel(isnan(accel)) = 0;
+%     accelInterp = fit(omega_fly, accel, 'smoothingspline', 'SmoothingParam', 0.99);
+%     accel = accelInterp(omega_fly);
 
     accelComp = accel - polyval(PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, omega_fly);
 
@@ -56,15 +59,16 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot, duty)
     eff = mPower ./ ePower;
     eff = smooth(eff, 501, 'sgolay');
     
-    model = load('../MotorLossModel.mat');
-    Padj = current.*voltage - ...
-        model.PlossMag_W(rpm_motor) - ...
-        model.PlossMech_W(rpm_motor) - ...
-        model.PlossContr_W(voltage, duty, rpm_motor, 6e3);
-    currentAdj = Padj ./ voltage;
-    [CoRV,int,~,~,stats] = regress(currentAdj,[rpm_motor,voltage*duty]);
+    currCutoff = max(find(current>18));
+%     currOfRPM = polyfit(rpm_motor(currCutoff:end), current(currCutoff:end), 1);
+%     Rs = mean(voltage(currCutoff:end))/currOfRPM(2);
+%     Ke = -currOfRPM(1)*Rs;
+%     Kv = 1/Ke;
+%     R2 = corrcoef(current(currCutoff:end), polyval(currOfRPM, rpm_motor(currCutoff:end)));
+%     R2 = R2(1,2)^2;
+    [CoRV,int,~,~,stats] = regress(current,[rpm_motor,voltage]);
     R2 = stats(1);
-    assert (R2 > 0.95, sprintf('Kv calculation bad due to excessive nonlinearity: R2=%.4f\n',R2));
+    assert (R2 > 0.99, 'Kv calculation bad due to excessive nonlinearity\n');
 %     assert (abs(CoRV(3)) < 0, 'y intercept problem');
     Rs = 1/CoRV(2);
     Ke = -CoRV(1) * Rs;
