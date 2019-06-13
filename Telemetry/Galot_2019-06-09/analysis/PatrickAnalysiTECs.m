@@ -4,27 +4,21 @@
 clear; clc; close all;
 
 % filenames = sprintfc('../spindowns%d.TXT',4);
-filenames = sprintfc('../racesim1.TXT',0);
+filenames = sprintfc('../laps5.TXT',0);
 %filenames = sprintfc('../cornering1.TXT',0);
 
 data = zeros(1,12);
 for i = 1:length(filenames)
     datanew = importdata(filenames{i});
     % data = data(16830:end, :);
-    datanew = [datanew(:, 1:6) datanew(:, 6:end)];%insert extra column because I messed up format
+    %datanew = [datanew(:, 1:6) datanew(:, 6:end)];%insert extra column because I messed up format
     datanew(:,10) = datanew(:,10) - datanew(1,10) + data(end,10) + 10000; % add time
     datanew(:,6) = datanew(:,6) - datanew(1,6) + data(end,6) + 1000; % add time
     data = [data; datanew];
 end
+
+data = data(1548:4846, :);
     
-%% racesim1
-data = data(8600:end,:);
-
-beginInd = find(data(:,4) > 6.7);
-beginInd = beginInd(1);
-endInd = 14640;
-data = data(beginInd:endInd,:);
-
 %%
 %data = importdata('WRRun.TXT');
 %data = data(6100:26460, :);
@@ -36,7 +30,7 @@ ACCEL_WINDOW = 100;
 
 %CAR MODEL---------------------------
 crr = 0.0015;
-mass = (67 + 21);
+mass = (50 + 21);
 
 densityAir = 1.225;
 frontalArea = 0.353;
@@ -55,6 +49,7 @@ power = data(:, 3);
 velo = data(:, 4);
 energy = data(:, 5);
 dist = data(:, 6);
+dpsCurrent = data(:, 9);
 elapsed = data(:, 10) ./ 1000;
 lat = data(:, 11);
 lon = data(:, 12);
@@ -68,6 +63,7 @@ elapsed = elapsed - elapsed(1);
 altRTK = lookupElev(lat, lon);
 altRTK = smooth(altRTK, 11);
 [x, y, z] = geodetic2ned(lat, lon, zeros(size(lat)), 35.322, -78.5111, 0, referenceEllipsoid('GRS80','m'));
+x = -x;%idk why but it works
 x(abs(x) > 3000) = 0;
 y(abs(y) > 3000) = 0;
 
@@ -139,26 +135,26 @@ legend show
 
 %% Plot decel vs map
 
-figure(3); clf;
-for window = 1 : size(windowPoints, 1)
-   
-   start = windowPoints(window, 1);
-   stop = windowPoints(window, 2);
-   
-    wLat = lat(start : stop);
-    wLon = lon(start : stop);
-    wAccel = accelComp(start : stop);
-    wVelo = velo(start : stop);
-
-    %scatter(wLat, wLon, 1, wAccel); %hold on;
-    
-    scatter3(wLat, wLon, wAccel, 3, 'filled'); hold on;
-    %scatter3(wLat, wLon, accelModel(wVelo), 2, 'filled'); hold on;
-    
-    xlim([35.315 35.33]);
-    ylim([-78.5135 -78.51]);
-    zlim([-0.07 0]);
-end
+% figure(3); clf;
+% for window = 1 : size(windowPoints, 1)
+%    
+%    start = windowPoints(window, 1);
+%    stop = windowPoints(window, 2);
+%    
+%     wLat = lat(start : stop);
+%     wLon = lon(start : stop);
+%     wAccel = accelComp(start : stop);
+%     wVelo = velo(start : stop);
+% 
+%     %scatter(wLat, wLon, 1, wAccel); %hold on;
+%     
+%     scatter3(wLat, wLon, wAccel, 3, 'filled'); hold on;
+%     %scatter3(wLat, wLon, accelModel(wVelo), 2, 'filled'); hold on;
+%     
+%     xlim([35.315 35.33]);
+%     ylim([-78.5135 -78.51]);
+%     zlim([-0.07 0]);
+% end
 
 figure(4); clf;
 plot(mipkwh);
