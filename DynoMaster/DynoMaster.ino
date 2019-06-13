@@ -7,7 +7,7 @@
 #define SPROCKET_TICKS 54
 #define MOTOR_TICKS 72
 
-#define PRINTEVERYTICK
+#define PRINTEVERYTICKx
 
 #define INA_ID 2
 #include <i2c_t3.h>
@@ -126,6 +126,8 @@ void printData(uint32_t currentMillis) {
   Serial.print(flywheelEnergy);
   Serial.print(' ');
   Serial.print(InaEnergy_J);
+  Serial.print(' ');
+  Serial.print(deltaSampleTime);
   Serial.println();
 }
 

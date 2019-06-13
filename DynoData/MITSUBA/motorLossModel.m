@@ -60,15 +60,15 @@ save('MotorLossModel','PlossContr_W','PlossI2R_W','PlossMag_W','PlossMech_W','Pl
 
 %% plot
 clf(5);clf(6);
-Ds = 1;
-Vbuss = 12;
+Ds = [1,.5];
+Vbuss = 12 ./ Ds;
 fs_Hz = 6e3;
 
-for i = 1:1
+for i = 1:length(Ds)
     D = Ds(i);
     Vbus = Vbuss(i);
     rpmVals = linspace(0,350,1000);
-    figure(6);%clf;
+    figure(6);
     p1 = subplot(3,1,1);
     plot(rpmVals, PlossContr_W(Vbus,D,rpmVals,fs_Hz), 'DisplayName','Controller losses'); hold on;
     plot(rpmVals, PlossI2R_W(Vbus,D,rpmVals,fs_Hz), 'DisplayName','Electrical losses');
@@ -94,7 +94,6 @@ for i = 1:1
     plot(rpmVals, eff(Vbus,D,rpmVals,fs_Hz),'DisplayName','current ripple');
     legend show; grid on;
     ylim([0.6,1]);
-    linkaxes([p1,p2,p3],'x');
 
     figure(5); % mitsuba plot
     IVals = Ptot_W(Vbus, D, rpmVals, fs_Hz)/(Vbus*D);
@@ -107,3 +106,24 @@ for i = 1:1
     legend show; grid on;
     ylim([0,100]); xlim([0,18]);
 end
+
+%% plot styles
+linestyles = {'-','-.','--',':'};
+a = figure(6);
+linkaxes(a.Children(2:2:end),'x');
+for ax = a.Children(2:2:end)'
+    numPlotEl = length(ax.Children);
+    colors = hsv(numPlotEl/i);
+    for plotElInd = 1 : numPlotEl
+        color = colors(mod(plotElInd,numPlotEl/i)+1,:);
+        ax.Children(plotElInd).LineStyle = linestyles{fix(plotElInd/(numPlotEl/i))+1};
+        ax.Children(plotElInd).Color = colors(mod(plotElInd,numPlotEl/i)+1,:);
+        fprintf('%s: %d %d %d\n',ax.Children(plotElInd).DisplayName,ax.Children(plotElInd).Color);
+    end
+end
+subplot(3,1,1);
+legend show;
+subplot(3,1,2);
+legend show;
+subplot(3,1,3);
+legend show;

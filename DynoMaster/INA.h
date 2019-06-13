@@ -32,6 +32,8 @@ double InaEnergy_J = 0;
   extern void INAOC_isr();
 #endif
 
+  uint32_t deltaSampleTime = 0;
+
 void updateINA()
 {
   static uint32_t lastInaMeasurement = micros();
@@ -47,6 +49,7 @@ void updateINA()
   
   uint32_t currentInaTime = micros();
   InaEnergy_J += InaPower_W * (currentInaTime - lastInaMeasurement) / 1000000.0;
+  deltaSampleTime = currentInaTime - lastInaMeasurement;
   lastInaMeasurement = currentInaTime;  
 }
 
@@ -66,8 +69,8 @@ void INAinit()
 {
   uint16_t confReg = ((0100) << 12) | // junk unused
                      ((000) << 9) |   // averages (1)
-                     ((000) << 6) |   // voltage conversion time (140us)
-                     ((101) << 3) |   // current conversion time (2.116ms)
+                     ((001) << 6) |   // voltage conversion time (204us)
+                     ((001) << 3) |   // current conversion time (204us)
                      ((111) << 0);    // continuous voltage and current measurements
   Wire.begin(I2C_MASTER, 0x00, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
   Wire.beginTransmission(0x40);
@@ -103,7 +106,6 @@ uint16_t INAreadReg(uint8_t reg)
 
   Wire.requestFrom(0x40, 2);
 
-  delayMicroseconds(100);
   if (Wire.available() < 2)
     return 0;
 

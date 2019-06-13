@@ -19,25 +19,33 @@ xlabel('motor mRPM'); ylabel('Power (W)'); title('Non-electrical Losses');
 
 %% I2R losses
 NUMPOLES = 16;
-Kv = 25.5;
+% Kv = 26.16; % from 314RPM
+Kv = 25.3; % reasonable efficiency, also from Jun1 data
 Rs = 0.25;
+% Kv = 25.35; % these were extracted from 0advance data
+% Rs = 0.245;
+% Kv = 26.16; % use these for speed control
+% Rs = 0.37;
 L = 128.65e-6;
+Vf = 0.3;
+Kt_Nm_A = 1/(Kv/60*2*pi);
 bemf_V =    @(rpm)          rpm/Kv;
 Ibus_A =    @(Vbus,D,rpm)   (Vbus.*D - bemf_V(rpm))/Rs;
-i_App = @(Vbus,D,rpm,fs_Hz) (Vbus-bemf_V(rpm)).*(D./fs_Hz)/L;
+i_App =     @(Vbus,D,rpm,fs_Hz) (Vbus-bemf_V(rpm)).*(D./fs_Hz)/L;
 Pelec_W =   @(Vbus,D,rpm)   Ibus_A(Vbus,D,rpm).*Vbus.*D;
-body_W =    @(Vf, I, D
+body_W =    @(I, D)     (1-D) * I * Vf;
 I2R_W =     @(Vbus,D,rpm)   -Ibus_A(Vbus,D,rpm).^2 * Rs .* sign(Ibus_A(Vbus,D,rpm));
 I2Rs_W =    @(Vbus,D,rpm,fs_Hz) -(Ibus_A(Vbus,D,rpm).^2 + i_App(Vbus,D,rpm,fs_Hz).^2/12) * ...
                                     Rs .* sign(Ibus_A(Vbus,D,rpm));
 
 %% all losses
-PlossContr_W = @(Vbus,D,rpm,fs_Hz) 0.1.*ones(size(rpm));
+PlossContr_W = @(Vbus,D,rpm,fs_Hz) 0.3.*ones(size(rpm));
 PlossI2R_W = @(Vbus,D,rpm,fs_Hz) abs(I2Rs_W(Vbus,D,rpm,fs_Hz));
 PlossMag_W = @(rpm) -polyval(lossPoly_eddy, rpm);
 PlossMech_W = @(rpm) -polyval(lossPoly_aeroAndBearing, rpm);
 PlossTot_W = @(Vbus,D,rpm,fs_Hz)    PlossContr_W(Vbus,D,rpm,fs_Hz) + ...
                                     abs(PlossI2R_W(Vbus,D,rpm,fs_Hz)) + ...
+                                    0*abs(body_W(Ibus_A(Vbus,D,rpm), D)) + ...
                                     PlossMag_W(rpm) + ...
                                     PlossMech_W(rpm);
 Ptot_W = @(Vbus, D, rpm, fs_Hz) Pelec_W(Vbus,D,rpm) + PlossContr_W(Vbus,D,rpm,fs_Hz);
@@ -46,16 +54,20 @@ eff = @(Vbus, D, rpm, fs_Hz) 1 - abs(PlossTot_W(Vbus,D,rpm,fs_Hz) ./ Ptot_W(Vbus
 %% motor mechanical output power
 Prot_W = @(Vbus, D, rpm, fs_Hz) Ptot_W(Vbus, D, rpm, fs_Hz)-PlossTot_W(Vbus, D, rpm, fs_Hz);
 torque_Nm = @(Vbus, D, rpm, fs_Hz) Prot_W(Vbus, D, rpm, fs_Hz) ./ (rpm*2*pi/60);
+torque_Nm = @(Vbus, D, rpm, fs_Hz) Kt_Nm_A * Ibus_A(Vbus,D,rpm);
 
 save('MotorLossModel','PlossContr_W','PlossI2R_W','PlossMag_W','PlossMech_W','PlossTot_W','Ptot_W','eff','Prot_W','torque_Nm');
 
 %% plot
 clf(5);clf(6);
-Ds = [0.5];
+Ds = [1,.5];
 Vbuss = 12 ./ Ds;
 fs_Hz = 6e3;
 
-for i = 1:1
+linestyles = {'-','-.','--',':'};
+
+for i = 1:length(Ds)
+    linestyle = linestyles{i};
     D = Ds(i);
     Vbus = Vbuss(i);
     rpmVals = linspace(0,350,1000);
@@ -86,6 +98,11 @@ for i = 1:1
     legend show; grid on;
     ylim([0.6,1]);
     linkaxes([p1,p2,p3],'x');
+    
+    for ax = [p1,p2,p3]
+        numPlotEl = length(ax.Children);
+        for plotElInd = numPlotEl/i*(i-1)+1 : numPlotEl/i
+    end
 
     figure(5); % mitsuba plot
     IVals = Ptot_W(Vbus, D, rpmVals, fs_Hz)/(Vbus*D);
