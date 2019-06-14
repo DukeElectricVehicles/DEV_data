@@ -6,7 +6,7 @@ function [PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, PARASITIC_LOSSES_POWER_OF_FLYWHE
 
     voltage = data(:, 1);
     current = data(:, 2);
-    rpm_fly = data(:, 4); % /16 is a manual correction
+    rpm_fly = data(:, 4) * 54/48; % /16 is a manual correction
 
     for i = 1:length(rpm_fly) - 2%fix glitches in rpm readout
        if (rpm_fly(i) > 0) && (rpm_fly(i+2) > 0) && (rpm_fly(i+1) == 0)
@@ -16,7 +16,7 @@ function [PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, PARASITIC_LOSSES_POWER_OF_FLYWHE
 
     % rpm_fly = circshift(rpm_fly, -27);
 
-    rpm_fly = 1./smooth(1./rpm_fly, 54, 'moving');
+    rpm_fly = 1./smooth(1./rpm_fly, 48, 'moving');
     rpm_fly = smooth(rpm_fly, 300, 'sgolay');
 
     velo = rpm_fly * 2 * pi / 60;
@@ -24,8 +24,13 @@ function [PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, PARASITIC_LOSSES_POWER_OF_FLYWHE
 
     accel = gradient(velo)./gradient(time);
     accel(isnan(accel)) = 0; % for some reason, moving average smooth takes a lot longer if there are nan's
-    accel = smooth(accel,54);
+    accel = smooth(accel,48);
     accel = smooth(accel,250,'sgolay');
+    
+    dummy = load('../MotorLossModel');
+    magLosses = dummy.PlossMag_W(rpm_fly * 54/72);
+    accel = accel + magLosses ./ velo / ROT_INERTIA;
+    
     power = accel * ROT_INERTIA .* velo;
 
     startWindow = 250;
@@ -77,6 +82,7 @@ function [PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, PARASITIC_LOSSES_POWER_OF_FLYWHE
         % plot(current.*voltage)
         % plot(power)
         % ylim([-10,5]);
+        grid on;
 
         figure(2); %clf;
         yyaxis left
@@ -88,5 +94,6 @@ function [PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, PARASITIC_LOSSES_POWER_OF_FLYWHE
         
         xlabel('v (RPM)');
         ylabel('a (RPM/s)');
+        grid on;
     end
 end

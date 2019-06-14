@@ -4,10 +4,10 @@
 #define RELAY 2
 #define HALL 23
 #define MA_WINDOW 1
-#define SPROCKET_TICKS 54
+#define SPROCKET_TICKS 48
 #define MOTOR_TICKS 72
 
-#define PRINTEVERYTICKx
+#define PRINTEVERYTICK
 
 #define INA_ID 2
 #include <i2c_t3.h>
@@ -126,8 +126,6 @@ void printData(uint32_t currentMillis) {
   Serial.print(flywheelEnergy);
   Serial.print(' ');
   Serial.print(InaEnergy_J);
-  Serial.print(' ');
-  Serial.print(deltaSampleTime);
   Serial.println();
 }
 
