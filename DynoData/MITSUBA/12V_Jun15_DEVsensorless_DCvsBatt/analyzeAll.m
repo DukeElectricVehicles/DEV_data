@@ -1,36 +1,43 @@
 clear; clc; %close all;
-figure(1);clf;figure(2);clf;figure(3);clf;figure(4);clf;figure(5);clf;
+clf(1);clf(2);clf(3);clf(4);clf(5);
 
+clear analyzeSingle
 global PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM
 global ROT_INERTIA
+global HALLTEETH FLYTEETH MOTORTEETH isRegen
+HALLTEETH = 48;
+FLYTEETH = 54;
+MOTORTEETH = 72;
+isRegen = 0;
 
 ACCEL_WINDOW = 1;
 ROT_INERTIA = 0.8489;% + 0.00745;
 
 load ../spindown/spindown_noRotor_jun1_after
-model = load('../MotorLossModel.mat');
 
 filesStruct = dir('*.txt');
 
 allPlotColors = {'k','b','c','g','y','r','m','k','b','c','g'};
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)_\d\.txt';
-filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)(?<mode>sync)?_\d\.txt';
+filenameFormat = '(?<voltage>\d+)V(?<current>\d.?\d*)A_(?<mode>.*)_(?<fsw>\d*)khz_\d\.txt';
 
 ismemberstruct = @(A, B) arrayfun( @(x) isequal( B, x ), A );
 allParameters = [];
 for i = 1:numel(filesStruct)
     filename = replace(filesStruct(i).name,',','.');
-%     if (~contains(filename, '8mm') && ~contains(filename,'PS12V_D1.00'))
-%         continue
-%     end
     stuff = regexp(filename,filenameFormat,'names');
 %     stuff = struct('name',filename(1:end-6));
     if (length(stuff)~=1)
         continue;
     end
-    if (str2num(stuff.voltage) ~= 12)
-        continue
+    if (str2num(stuff.voltage)*str2num(stuff.current) ~= 60)
+        if (~isequal(stuff.mode,'DEVbuck_FF') || (str2num(stuff.current)~=5))
+            continue
+        end
     end
+%     if (str2num(stuff.voltage) ~= 12)
+%         continue
+%     end
 %     if (abs(str2num(stuff.voltage)*str2num(stuff.duty) - 12) > .1 )
 %         continue
 %     end
@@ -47,6 +54,7 @@ for i = 1:numel(filesStruct)
     end
 end
 
+%%
 allRs = [];
 allKv = [];
 for i = 1:numel(filesStruct)
@@ -65,7 +73,7 @@ for i = 1:numel(filesStruct)
     linecolor = allPlotColors{find(ismemberstruct(allParameters,stuff))};
     filePath = strcat(filesStruct(i).folder, '/', filesStruct(i).name);
     
-    [Rs, Kv] = analyzeSingle(filePath, linecolor, true, str2num(stuff.duty));
+    [Rs, Kv] = analyzeSingle(filePath, linecolor, true, 1);%str2num(stuff.duty));
     allRs = [allRs; Rs];
     allKv = [allKv; Kv];
 end
@@ -74,9 +82,33 @@ fprintf('Kv = %.4f +/- %.4f\n', mean(allKv), std(allKv));
 fprintf('Rs = %.4f +/- %.4f\n', mean(allRs), std(allRs));
 
 %% plot model
-rpmVals =
+model = load('../MotorLossModel.mat');
+rpmVals = linspace(0,350,1000);
+if (isRegen)
+    targetCurrent = str2num(allParameters(1).current)
+else
+    targetCurrent = -str2num(allParameters(1).current)
+end
+calcDuties = @(rpm) fminsearch(@(D) abs(model.Ptot_W(12,D,rpm,6000)./12 - targetCurrent),0.5);
+Ds = zeros(size(rpmVals));
+effs = zeros(size(rpmVals));
+for i = 1:length(Ds)
+    Ds(i) = calcDuties(rpmVals(i));
+    effs(i) = model.eff(12,Ds(i),rpmVals(i),6e3);
+end
+figure(1); plot(rpmVals,effs,'DisplayName',sprintf('Motor Model (%dA)',targetCurrent));
+figure(2); plot(rpmVals,model.Ptot_W(12,Ds,rpmVals,6e3),'DisplayName',sprintf('Motor Model (%dA)',targetCurrent));
+figure(3); plot(12.*ones(size(rpmVals)),model.Ptot_W(12,Ds,rpmVals,6e3)/12,'DisplayName',sprintf('Motor Model (%dA)',targetCurrent));
+figure(4); plot(rpmVals,model.torque_Nm(12,Ds,rpmVals,6e3)/ROT_INERTIA,'DisplayName',sprintf('Motor Model (%dA)',targetCurrent));
+figure(5);
+    Ivals = model.Ptot_W(12,Ds,rpmVals,6e3)/12;
+    yyaxis left;
+    plot(Ivals,rpmVals,'DisplayName',sprintf('Motor Model (%dA)',targetCurrent));
+    yyaxis right;
+    plot(Ivals, 100*effs,'DisplayName',sprintf('Motor Model (%dA)',targetCurrent)); hold on;
+    plot(Ivals, model.torque_Nm(12,Ds, rpmVals, 6e3)/9.81*100,'DisplayName',sprintf('Motor Model (%dA)',targetCurrent));
 
-
+%%
 figure(1);
 legend(gca,'show','Location','South');
 % yyaxis left
@@ -91,30 +123,44 @@ legend(gca,'show');
 xlabel('RPM'); ylabel('Power'); zlabel('Efficiency'); title('Efficiency Map (DEV Controller)');
 grid on;
 zlim([0.6, 1]);
-ylim([0, 100]);
+if (isRegen)
+    ylim([-100,0]);
+else
+    ylim([0, 100]);
+end
 xlim([0, 300]);
 
 figure(3);
 subplot(2,1,1);
-legend(gca,'show');
+legend('Location','eastoutside');
 ylabel('Voltage'); title('Voltage and Current vs Speed (DEV Controller)');
 ylim([0,20]);
 subplot(2,1,2);
-legend show
 xlabel('RPM'); ylabel('Current');
-ylim([0,20]);
+if (isRegen)
+    ylim([-5,0]);
+else
+    ylim([0,20]);
+end
 grid on;
 
 figure(4);
 legend show
 xlabel('RPM'); ylabel('Acceleration');
-ylim([0,10]);
+if (isRegen)
+    ylim([-10,0]);
+else
+    ylim([0,10]);
+end
 grid on;
 
-%%
 figure(5);
 xlabel('Current'); title('Mitsuba datasheet graph (DEV Controller)'); grid on
-xlim([0,18]);
+if (isRegen)
+    xlim([-5,0]);
+else
+    xlim([0,18]);
+end
 legend show
 yyaxis left
 ylabel('Speed (RPM)'); ylim([0,500]);

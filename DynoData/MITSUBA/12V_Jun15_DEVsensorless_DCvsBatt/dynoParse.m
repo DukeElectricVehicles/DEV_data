@@ -9,7 +9,7 @@ isRegen = 0;
 
 load ../spindown/spindown_yesRotor_jun14_before % PARASITIC LOSSES
 % data = importdata('./12V_t5A_-2A_FF_H_0.txt');
-data = importdata('./12V_D1,00_H_0.txt');
+data = importdata('./12V5A_DCDC_FF_5khz_0.txt');
 
 if (isRegen)
     data = data(data(:,2)<-.1,:); % current < -.1
@@ -72,6 +72,7 @@ else
 end
 eff = smooth(time,eff, 104, 'sgolay');
 
+%%
 figure(1);clf;
 subplot(3,1,1);
 plot(time, rpm_motor);%, time, data(:,4)*54/72);
@@ -106,15 +107,15 @@ else
 end
 grid on;
 
-figure(3);%clf;
-plot(velo_mph, eff); hold on;
+figure(3);clf;
+plot(rpm_motor, eff); hold on;
 ylim([0.6, 1]); xlim([0,max(velo_mph)]);
 ylabel('efficiency');
 xlabel('speed (mph)');
 grid on;
 title('efficiency vs speed');
 
-figure(4);%clf;
+figure(4);clf;
 plot(ePower, eff); hold on;
 ylim([0.6, 1]);
 if (isRegen)
