@@ -4,7 +4,7 @@
 clear; clc; close all;
 
 % filenames = sprintfc('../spindowns%d.TXT',4);
-filenames = sprintfc('../laps5.TXT',0);
+filenames = sprintfc('../laps3.TXT',0);
 %filenames = sprintfc('../cornering1.TXT',0);
 
 data = zeros(1,12);
@@ -17,7 +17,7 @@ for i = 1:length(filenames)
     data = [data; datanew];
 end
 
-data = data(1548:4846, :);
+data = data(9082:11110, :);
     
 %%
 %data = importdata('WRRun.TXT');
@@ -73,6 +73,14 @@ pe = mass * 9.8 * altRTK;
 
 te = ke + pe;
 mipkwh = (dist ./ 1609) ./ (energy ./ 3.6e6);
+
+wheelDia = .475;
+kv = 26.6;
+%kv = 25.5;
+omega = velo ./ (wheelDia / 2);
+omega = omega * 60 / (2*pi);
+emf = omega / kv;
+
 
 windowPoints = PatrickWindow(velo, power, elapsed);
 % windowPoints = [];

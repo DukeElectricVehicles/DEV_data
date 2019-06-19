@@ -8,7 +8,7 @@ I = I + 0.020 * 0.23^2; %Sealant
 I = I + 0.380 * 0.20^2; %DX32 rim
 I = I + 0.170 * 0.13^2; %Spokes
 
-filesStruct = dir('*.txt');
+filesStruct = dir('mich*.txt');
 
 for i = 1:numel(filesStruct)
     filename = filesStruct(i).name;

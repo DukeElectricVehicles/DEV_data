@@ -3,7 +3,7 @@
 
 clear; clc; close all;
 
-% filenames = sprintfc('../spindowns%d.TXT',4);
+%filenames = sprintfc('../spindowns%d.TXT',2);
 filenames = sprintfc('../racesim1.TXT',0);
 %filenames = sprintfc('../cornering1.TXT',0);
 
@@ -26,8 +26,8 @@ endInd = 14640;
 data = data(beginInd:endInd,:);
 
 %%
-%data = importdata('WRRun.TXT');
-%data = data(6100:26460, :);
+% data = importdata('WRRun.TXT');
+% data = data(6100:26460, :);
 
 %data = importdata('thirdRuns.TXT');
 %data = data(2680:end, :);
