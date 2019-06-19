@@ -1,5 +1,6 @@
 clear; clc; %close all;
-clf(1);clf(2);clf(3);clf(4);clf(5);
+for i=1:6; figure(i); end;
+clf(1);clf(2);clf(3);clf(4);clf(5);clf(6); %% if this line throws an error, create figures 1-6 first with figure(1);figure(2);...
 
 clear analyzeSingle
 global PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM
@@ -13,11 +14,12 @@ isRegen = 0;
 ACCEL_WINDOW = 1;
 ROT_INERTIA = 0.8489;% + 0.00745;
 
-load ../spindown/spindown_noRotor_jun1_after
+load ../spindown/spindown_yesRotor_jun14_before
 
+%%
 filesStruct = dir('*.txt');
 
-allPlotColors = {'k','b','c','g','y','r','m','k','b','c','g'};
+% allPlotColors = {'k','b','c','g','y','r','m','k','b','c','g'};
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)_\d\.txt';
 filenameFormat = '(?<voltage>\d+)V(?<current>\d.?\d*)A_(?<mode>.*)_(?<fsw>\d*)khz_\d\.txt';
 
@@ -30,11 +32,11 @@ for i = 1:numel(filesStruct)
     if (length(stuff)~=1)
         continue;
     end
-    if (str2num(stuff.voltage)*str2num(stuff.current) ~= 60)
+%     if (str2num(stuff.voltage)*str2num(stuff.current) ~= 60)
         if (~isequal(stuff.mode,'DEVbuck_FF') || (str2num(stuff.current)~=5))
             continue
         end
-    end
+%     end
 %     if (str2num(stuff.voltage) ~= 12)
 %         continue
 %     end
@@ -54,6 +56,8 @@ for i = 1:numel(filesStruct)
     end
 end
 
+allPlotColors = hsv(length(allParameters));
+
 %%
 allRs = [];
 allKv = [];
@@ -70,7 +74,7 @@ for i = 1:numel(filesStruct)
     catch error
         continue
     end
-    linecolor = allPlotColors{find(ismemberstruct(allParameters,stuff))};
+    linecolor = allPlotColors(find(ismemberstruct(allParameters,stuff)),:);
     filePath = strcat(filesStruct(i).folder, '/', filesStruct(i).name);
     
     [Rs, Kv] = analyzeSingle(filePath, linecolor, true, 1);%str2num(stuff.duty));
@@ -173,5 +177,5 @@ for i = 1:length(allParameters)
     allP = {fields{:};vals{:}};
     text(13, 5+4*(length(allParameters)-i+1), ...
         sprintf('%s=%s\t', allP{:}),...
-        'Color',allPlotColors{i},'FontSize',12,'FontName','FixedWidth');
+        'Color',allPlotColors(i,:),'FontSize',12,'FontName','FixedWidth');
 end
