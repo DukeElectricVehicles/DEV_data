@@ -1,0 +1,84 @@
+928 AM	82  F	74  F	76 %	
+VAR	5 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+953 AM	83  F	73  F	72 %	
+NE	8 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Mostly Cloudy
+1050 AM	79  F	73  F	83 %	
+SE	10 mph	0 mph	29.8 in	0.1 in	0.0 in	
+Heavy Rain
+1053 AM	77  F	75  F	94 %	
+SSE	6 mph	0 mph	29.8 in	0.1 in	0.0 in	
+T-Storm
+1101 AM	77  F	75  F	94 %	
+S	3 mph	0 mph	29.8 in	0.0 in	0.0 in	
+T-Storm
+1107 AM	77  F	75  F	94 %	
+SSE	3 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Light Rain
+1114 AM	77  F	75  F	94 %	
+S	6 mph	0 mph	29.8 in	0.0 in	0.0 in	
+T-Storm
+1131 AM	74  F	73  F	97 %	
+SSW	15 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Light Rain
+1146 AM	73  F	73  F	100 %	
+SSE	6 mph	0 mph	29.8 in	0.1 in	0.0 in	
+Rain
+1153 AM	73  F	73  F	100 %	
+SSE	7 mph	0 mph	29.8 in	0.1 in	0.0 in	
+Light Rain
+1253 PM	79  F	74  F	84 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+153 PM	77  F	74  F	90 %	
+SE	5 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Light Rain
+201 PM	77  F	74  F	90 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Light Rain
+225 PM	75  F	73  F	94 %	
+SSE	12 mph	0 mph	29.8 in	0.1 in	0.0 in	
+Rain
+238 PM	73  F	72  F	96 %	
+SE	7 mph	0 mph	29.8 in	0.3 in	0.0 in	
+Heavy Rain
+245 PM	74  F	72  F	93 %	
+SSE	6 mph	0 mph	29.8 in	0.3 in	0.0 in	
+Rain
+253 PM	73  F	72  F	96 %	
+ESE	5 mph	0 mph	29.8 in	0.4 in	0.0 in	
+Light Rain
+350 PM	73  F	73  F	100 %	
+ESE	5 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+353 PM	74  F	74  F	100 %	
+ESE	3 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+453 PM	74  F	74  F	100 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+524 PM	74  F	74  F	100 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+553 PM	74  F	73  F	97 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Light Rain
+653 PM	73  F	73  F	100 %	
+SE	6 mph	0 mph	29.8 in	0.1 in	0.0 in	
+Mostly Cloudy
+714 PM	73  F	73  F	100 %	
+ESE	5 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Mostly Cloudy
+725 PM	73  F	73  F	100 %	
+E	3 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Mostly Cloudy
+733 PM	73  F	73  F	100 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Mostly Cloudy
+737 PM	73  F	73  F	100 %	
+CALM	0 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+753 PM	73  F	73  F	100 %	
+E	3 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy

@@ -1,0 +1,42 @@
+7:53 AM	90  F	71  F	54 %	
+SW	9 mph	0 mph	29.9 in	0.0 in	0.0 in	
+Fair
+8:53 AM	92  F	72  F	52 %	
+SSW	10 mph	20 mph	29.9 in	0.0 in	0.0 in	
+Fair
+9:53 AM	92  F	72  F	52 %	
+SW	12 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Partly Cloudy
+10:53 AM	92  F	69  F	47 %	
+S	9 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Partly Cloudy
+11:53 AM	94  F	71  F	47 %	
+SSW	12 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+12:53 PM	91  F	70  F	50 %	
+S	8 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+1:53 PM	91  F	72  F	53 %	
+WSW	5 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+2:53 PM	90  F	71  F	54 %	
+S	8 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Cloudy
+3:34 PM	89  F	71  F	55 %	
+SSW	14 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Thunder in the Vicinity
+3:53 PM	87  F	73  F	63 %	
+S	12 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+4:53 PM	85  F	73  F	67 %	
+S	8 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+5:53 PM	83  F	71  F	67 %	
+S	8 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+6:53 PM	81  F	71  F	72 %	
+S	8 mph	0 mph	29.8 in	0.0 in	0.0 in	
+Fair
+7:53 PM	79  F	72  F	79 %	
+S	8 mph	0 mph	29.9 in	0.0 in	0.0 in	
+Fair
