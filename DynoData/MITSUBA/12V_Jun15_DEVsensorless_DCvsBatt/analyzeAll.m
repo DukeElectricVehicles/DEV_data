@@ -22,6 +22,7 @@ filesStruct = dir('*.txt');
 % allPlotColors = {'k','b','c','g','y','r','m','k','b','c','g'};
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)_\d\.txt';
 filenameFormat = '(?<voltage>\d+)V(?<current>\d.?\d*)A_(?<mode>.*)_(?<fsw>\d*)khz_\d\.txt';
+% filenameFormat = '(?<voltage>\d+)V(?<current>\d.?\d*)A_(?<mode>.*)_(?<fsw>\d*)khz_(?<trial>\d)\.txt';
 
 ismemberstruct = @(A, B) arrayfun( @(x) isequal( B, x ), A );
 allParameters = [];
@@ -86,12 +87,12 @@ fprintf('Kv = %.4f +/- %.4f\n', mean(allKv), std(allKv));
 fprintf('Rs = %.4f +/- %.4f\n', mean(allRs), std(allRs));
 
 %% plot model
-model = load('../MotorLossModel.mat');
+model = load('../MotorLossModel5.mat');
 rpmVals = linspace(0,350,1000);
 if (isRegen)
-    targetCurrent = str2num(allParameters(1).current)
-else
     targetCurrent = -str2num(allParameters(1).current)
+else
+    targetCurrent = str2num(allParameters(1).current)
 end
 calcDuties = @(rpm) fminsearch(@(D) abs(model.Ptot_W(12,D,rpm,6000)./12 - targetCurrent),0.5);
 Ds = zeros(size(rpmVals));

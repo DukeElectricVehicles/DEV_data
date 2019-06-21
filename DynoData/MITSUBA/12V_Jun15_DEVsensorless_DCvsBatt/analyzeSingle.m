@@ -56,9 +56,9 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot, duty)
     accel = gradient(omega_fly)./gradient(time);
     smooth(accel, HALLTEETH);
 
-%     accel = smooth(time, accel, 401, 'sgolay');
-    accelInterp = fit(omega_fly, accel, 'smoothingspline', 'SmoothingParam', 0.99);
-    accel = accelInterp(omega_fly);
+    accel = smooth(time, accel, 401, 'sgolay');
+%     accelInterp = fit(omega_fly, accel, 'smoothingspline', 'SmoothingParam', 0.99);
+%     accel = accelInterp(omega_fly);
 
     accelComp = accel - polyval(PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS, omega_fly);
 
