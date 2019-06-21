@@ -7,7 +7,7 @@ ACCEL_WINDOW = 54;
 ROT_INERTIA = 0.8489;
 % ROT_INERTIA = 0.06175; % stock hub wheel
 
-filenames = sprintfc('spindown_noRotor_jun1_after_%d.txt',0:2); % secret undocumented function ;)
+filenames = sprintfc('spindown_yesRotor_2019-06-20_before_%d.txt',0:2); % secret undocumented function ;)
 
 allCoeffs = zeros(length(filenames),4);
 allCoeffsLoss = zeros(length(filenames),4);
@@ -32,6 +32,6 @@ fprintf('Ploss (rps2) = (%0.2e)rpm^3 + (%0.2e)rpm^2 + (%0.2e)rpm + (%0.2e)\n',..
     PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM);
 fprintf('Parasitic loss at 322RPM: %.5fW\n', polyval(PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM,322));
 
-% save('spindown_noRotor_jun1_after',...
+% save('spindown_yesRotor_jun20_before',...
 %     'PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS',...
 %     'PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM');
