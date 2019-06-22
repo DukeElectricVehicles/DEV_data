@@ -3,7 +3,7 @@
 
 clear;
 
-filename = '../flyingLaps1.TXT';
+filename = '../flyingLaps3.TXT';
 
 %% import
 data = importdata(filename);
@@ -90,20 +90,22 @@ lapInds = lapInds(1:numLaps+1);
 indEnd = lapInds(end);
 
 %% find places with same velocity
-perturbInds = fix(mean(diff(lapInds))/3);
-perturbInds = -perturbInds:perturbInds;
-veloSpline = spline(1:length(velo),velo);
-[dun, duninds] = unique(distTraveled);
-antiDistSpline = spline(dun, duninds);
-indOffset = fminsearch(@(i) abs(ppval(veloSpline,antiDistSpline(i)+indStart)-ppval(veloSpline,antiDistSpline(i)+indEnd)), 0)
-indOffset = fix(indOffset);
-indOffset = antiDistSpline(i)
-assert(abs(elapsed(indOffset+indStart)-elapsed(indStart))<30,'couldn''t find location with same velocity very nearby');
-figure(2); hold on;
-plot(lon(lapInds),lat(lapInds),'b*');
-plot(lon(lapInds+indOffset),lat(lapInds+indOffset),'r*');
-legend('path','selected pos','matching velocity pos');
-velo(lapInds+indOffset)
+% perturbInds = fix(mean(diff(lapInds))/3);
+% perturbInds = -perturbInds:perturbInds;
+% veloSpline = spline(1:length(velo),velo);
+% [dun, duninds] = unique(distTraveled);
+% antiDistSpline = spline(dun, duninds);
+% indOffset = fminsearch(@(i) abs(ppval(veloSpline,ppval(antiDistSpline,i)+indStart)-ppval(veloSpline,ppval(antiDistSpline,i)+indEnd)), 0)
+% indOffset = ppval(antiDistSpline,indOffset)
+% indOffset = fix(indOffset);
+% assert(abs(elapsed(indOffset+indStart)-elapsed(indStart))<30,'couldn''t find location with same velocity very nearby');
+% figure(2); hold on;
+% plot(lon(lapInds),lat(lapInds),'b*');
+% plot(lon(lapInds+indOffset),lat(lapInds+indOffset),'r*');
+% legend('path','selected pos','matching velocity pos');
+% velo(lapInds+indOffset)
+
+indOffset = 0;
 
 %%
 data = data(indStart+indOffset:indEnd+indOffset,:);

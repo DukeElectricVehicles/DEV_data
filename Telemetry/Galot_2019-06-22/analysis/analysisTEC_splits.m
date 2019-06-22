@@ -7,11 +7,13 @@ clear; %clc; close all;
 % filenames = sprintfc('../installationLap_cut.mat',0);
 filenames = sprintfc('../flyinglaps3_cut.mat',0);
 
+windows = [];
 data = zeros(1,12);
 for i = 1:length(filenames)
 %     datanew = importdata(filenames{i});
     datanew = load(filenames{i});
-    lapInds = datanew.lapInds;
+    lapInds = datanew.lapInds';
+    windows = [windows; [lapInds(1:end-1),lapInds(2:end)]];
     datanew = datanew.data;
     % data = data(16830:end, :);
     %datanew = [datanew(:, 1:6) datanew(:, 6:end)];%insert extra column because I messed up format
@@ -107,6 +109,17 @@ deltaTE = smooth(deltaTE, ACCEL_WINDOW);
 % end
 
 accelComp = deltaTE ./ (velo * mass);
+
+for i = 1:size(windows,1)
+    fprintf('v split: %.3f\n', mean(velo(windows(i,1):windows(i,2))))
+end
+for i = 1:size(windows,1)
+    ind1 = windows(i,1);
+    ind2 = windows(i,2);
+    fprintf('mpkwh split: %.3f\n', ...
+        ((dist(ind2)-dist(ind1)) / 1609) / ...
+        ((energy(ind2)-energy(ind1) - te(ind2)+te(ind1)) / 3.6e6));
+end
 
 %% Plot start/stop lines--------------------------------------------
 % figure(1); clf;

@@ -22,3 +22,14 @@ Notes from Galot practice run Jun 22, 2019
 		Olga driving
 		couple full laps + one mini-lap
 		Joulemeter says 33062J
+		BMS says 33630J
+
+		score approx 830 mi/kWh
+
+2:55PM
+	flying laps 3 - 'flyinglaps3.TXT'
+		counterclockwise, to check which direction is better
+		Olga driving
+		mini lap, one full lap, mini lap
+		Joulemeter says 9290J
+		BMS says 9399J
