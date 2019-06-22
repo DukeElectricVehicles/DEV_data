@@ -3,7 +3,7 @@
 
 clear;
 
-filename = '../installationLap.TXT';
+filename = '../flyingLaps1.TXT';
 
 %% import
 data = importdata(filename);
@@ -27,19 +27,18 @@ end
 
 %% plot
 figure(1);clf;
-subplot(3,1,1);
+subplot(4,1,1);
 plot(elapsed); ylabel('BMS time');
-subplot(3,1,2);
+subplot(4,1,2);
 plot(velo);    ylabel('velo');
-subplot(3,1,3);
+subplot(4,1,3);
 plot(power);   ylabel('power');
+subplot(4,1,4);
+plot(lat-mean(lat)); hold on;
+plot(lon-mean(lon)); legend('lat','lon');
 xlabel('index');
 
 figure(2);clf;
-subplot(2,1,1);
-plot(lat-mean(lat)); hold on;
-plot(lon-mean(lon)); legend('lat','lon');
-subplot(2,1,2);
 scatter(lat,lon,3,timeCum);colorbar
 title('Position');
 
@@ -52,7 +51,7 @@ h=datacursormode;
 set(h,'DisplayStyle','datatip','SnapToData','off');
 waitfor(gcf,'CurrentCharacter',char(32));
 s = getCursorInfo(h);
-indStart = s.Position(1);
+indStart = fix(s.Position(1));
 
 %% find points
 dist = @(indStart,ind) sqrt((lat(ind)-lat(indStart)).^2 + (lon(ind)-lon(indStart)).^2)
@@ -83,8 +82,12 @@ for i = indStart:length(timeCum)
 %     if (samePlace)
 end
 plot(lapInds,dist(indStart,lapInds),'r*');
+drawnow();
+fprintf('how many laps?\n');
+numLaps = input('');
 
 %%
-data = data(indStart:lapInds(1));
-newfilename = [filename(1:end-4),'new'];
-save(filename,'data');
+data = data(indStart:lapInds(numLaps+1),:);
+lapInds = lapInds-indStart+1;
+newfilename = [filename(1:end-4),'_cut'];
+save(newfilename,'data','lapInds');

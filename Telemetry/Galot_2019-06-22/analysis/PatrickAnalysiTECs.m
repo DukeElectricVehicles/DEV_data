@@ -3,12 +3,16 @@
 
 clear; %clc; close all;
 
-filenames = sprintfc('../installationLap.TXT',0);
+% filenames = sprintfc('../installationLap.TXT',0);
+% filenames = sprintfc('../installationLap_cut.mat',0);
+filenames = sprintfc('../flyinglaps1_cut.mat',0);
 
 data = zeros(1,12);
 for i = 1:length(filenames)
-    datanew = importdata(filenames{i});
-    datanew = load(filenames{i})
+%     datanew = importdata(filenames{i});
+    datanew = load(filenames{i});
+    lapInds = datanew.lapInds;
+    datanew = datanew.data;
     % data = data(16830:end, :);
     %datanew = [datanew(:, 1:6) datanew(:, 6:end)];%insert extra column because I messed up format
     datanew(:,10) = datanew(:,10) - datanew(1,10) + data(end,10) + 10000; % add time
@@ -16,7 +20,7 @@ for i = 1:length(filenames)
     data = [data; datanew];
 end
 
-data = data(1:end,:);
+data = data(2:end,:);
 
 %%
 %data = importdata('WRRun.TXT');
@@ -165,12 +169,18 @@ accelComp = deltaTE ./ (velo * mass);
 % %     zlim([-0.07 0]);
 % % end
 
+figure(1);clf;
+scatter(lat,lon); hold on;
+plot(lat(1),lon(1),'r*');
+plot(lat(end),lon(end),'r*');
+
 figure(4); clf;
 p1 = plot(dist, mipkwhTEC);
 ylim([0 1000]); ylabel('Score');
 hold on; grid on;
 plot(dist, mipkwh);
 legend('Total Energy Compensation','raw');
+fprintf('mipkwhTEC: %.2f\n',mipkwhTEC(end));
 
 teC = energy - te; %total energy consumed
 tpW = 20;
@@ -199,7 +209,7 @@ scatter3(x, y, velo * 10);
 scatter3(x, y, power);
 zlim([-50 100]);
 
-figure;
+figure(7);
 plot(current, voltage - emf, '.'); hold on; grid on;
 xlabel('Current in A');
 ylabel('BMS voltage - emf');
