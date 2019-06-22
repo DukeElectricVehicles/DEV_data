@@ -170,9 +170,9 @@ accelComp = deltaTE ./ (velo * mass);
 % % end
 
 figure(1);clf;
-scatter(lat,lon); hold on;
-plot(lat(1),lon(1),'r*');
-plot(lat(end),lon(end),'r*');
+scatter(lon,lat); hold on;
+plot(lon(1),lat(1),'r*');
+plot(lon(end),lat(end),'r*');
 
 figure(4); clf;
 p1 = plot(dist, mipkwhTEC);

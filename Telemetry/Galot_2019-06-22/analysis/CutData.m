@@ -13,7 +13,7 @@ current = data(:, 2);
 power = data(:, 3);
 velo = data(:, 4);
 energy = data(:, 5);
-dist = data(:, 6);
+distTraveled = data(:, 6);
 dpsCurrent = data(:, 9);
 elapsed = data(:, 10) ./ 1000;
 lat = data(:, 11); lat(lat==0) = nan; lat(isnan(lat)) = mean(lat,'omitnan');
@@ -39,7 +39,7 @@ plot(lon-mean(lon)); legend('lat','lon');
 xlabel('index');
 
 figure(2);clf;
-scatter(lat,lon,3,timeCum);colorbar
+scatter(lon,lat,3,timeCum);colorbar
 title('Position');
 
 %% get user click - from https://www.mathworks.com/matlabcentral/answers/263209-how-to-get-data-cursor-values-on-user-input
@@ -49,12 +49,13 @@ figure(1);
 set(gcf,'CurrentCharacter',char(1));
 h=datacursormode;
 set(h,'DisplayStyle','datatip','SnapToData','off');
+drawnow();
 waitfor(gcf,'CurrentCharacter',char(32));
 s = getCursorInfo(h);
 indStart = fix(s.Position(1));
 
 %% find points
-dist = @(indStart,ind) sqrt((lat(ind)-lat(indStart)).^2 + (lon(ind)-lon(indStart)).^2)
+dist = @(indStart,ind) sqrt((lat(ind)-lat(indStart)).^2 + (lon(ind)-lon(indStart)).^2);
 figure(3);clf;
 plot(indStart:length(lat),dist(indStart,indStart:length(lat))); hold on;
 
@@ -85,9 +86,27 @@ plot(lapInds,dist(indStart,lapInds),'r*');
 drawnow();
 fprintf('how many laps?\n');
 numLaps = input('');
+lapInds = lapInds(1:numLaps+1);
+indEnd = lapInds(end);
+
+%% find places with same velocity
+perturbInds = fix(mean(diff(lapInds))/3);
+perturbInds = -perturbInds:perturbInds;
+veloSpline = spline(1:length(velo),velo);
+[dun, duninds] = unique(distTraveled);
+antiDistSpline = spline(dun, duninds);
+indOffset = fminsearch(@(i) abs(ppval(veloSpline,antiDistSpline(i)+indStart)-ppval(veloSpline,antiDistSpline(i)+indEnd)), 0)
+indOffset = fix(indOffset);
+indOffset = antiDistSpline(i)
+assert(abs(elapsed(indOffset+indStart)-elapsed(indStart))<30,'couldn''t find location with same velocity very nearby');
+figure(2); hold on;
+plot(lon(lapInds),lat(lapInds),'b*');
+plot(lon(lapInds+indOffset),lat(lapInds+indOffset),'r*');
+legend('path','selected pos','matching velocity pos');
+velo(lapInds+indOffset)
 
 %%
-data = data(indStart:lapInds(numLaps+1),:);
+data = data(indStart+indOffset:indEnd+indOffset,:);
 lapInds = lapInds-indStart+1;
 newfilename = [filename(1:end-4),'_cut'];
 save(newfilename,'data','lapInds');

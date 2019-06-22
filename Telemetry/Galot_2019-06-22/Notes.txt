@@ -14,3 +14,11 @@ Notes from Galot practice run Jun 22, 2019
 		Olga driving, trying her best
 		Couple full laps, one mini-lap
 		Joulemeter says 30773J
+		BMS says 31161J
+
+2:25PM
+	flying laps 2 - 'flyinglaps2.TXT'
+		Opposite direction (clockwise)
+		Olga driving
+		couple full laps + one mini-lap
+		Joulemeter says 33062J

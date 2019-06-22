@@ -3,7 +3,7 @@
 
 clear;
 
-filename = '../installationLap.TXT';
+filename = '../flyingLaps1.TXT';
 
 %% import
 data = importdata(filename);
@@ -27,20 +27,19 @@ end
 
 %% plot
 figure(1);clf;
-subplot(3,1,1);
+subplot(4,1,1);
 plot(elapsed); ylabel('BMS time');
-subplot(3,1,2);
+subplot(4,1,2);
 plot(velo);    ylabel('velo');
-subplot(3,1,3);
+subplot(4,1,3);
 plot(power);   ylabel('power');
+subplot(4,1,4);
+plot(lat-mean(lat)); hold on;
+plot(lon-mean(lon)); legend('lat','lon');
 xlabel('index');
 
 figure(2);clf;
-subplot(2,1,1);
-plot(lat-mean(lat)); hold on;
-plot(lon-mean(lon)); legend('lat','lon');
-subplot(2,1,2);
-scatter(lat,lon,3,timeCum);colorbar
+scatter(lon,lat,3,timeCum);colorbar
 title('Position');
 
 %% get user click - from https://www.mathworks.com/matlabcentral/answers/263209-how-to-get-data-cursor-values-on-user-input
@@ -50,9 +49,10 @@ figure(1);
 set(gcf,'CurrentCharacter',char(1));
 h=datacursormode;
 set(h,'DisplayStyle','datatip','SnapToData','off');
+drawnow();
 waitfor(gcf,'CurrentCharacter',char(32));
 s = getCursorInfo(h);
-indStart = s.Position(1);
+indStart = fix(s.Position(1));
 
 %% find points
 dist = @(indStart,ind) sqrt((lat(ind)-lat(indStart)).^2 + (lon(ind)-lon(indStart)).^2)
@@ -83,8 +83,24 @@ for i = indStart:length(timeCum)
 %     if (samePlace)
 end
 plot(lapInds,dist(indStart,lapInds),'r*');
+drawnow();
+fprintf('how many laps?\n');
+numLaps = input('');
+indEnd = lapInds(numLaps+1);
+
+%% find places with same velocity
+perturbInds = fix(mean(diff(lapInds))/3);
+perturbInds = -perturbInds:perturbInds;
+veloSpline = spline(1:length(velo),velo);
+indOffset = fminsearch(@(i) abs(ppval(veloSpline,i+indStart)-ppval(veloSpline,i+indEnd)), 0);
+indOffset = fix(indOffset);
+assert(abs(elapsed(indOffset+indStart)-elapsed(indStart))<30,'couldn''t find location with same velocity very nearby');
+figure(2);
+plot(lon(inds),lat
+plot(lapInds,dist(indStart+indOffset,lapInds+indOffset),'b^');
 
 %%
-data = data(startLoc:lapInds(1));
-newfilename = [filename(1:end-4),
-save('filename
+data = data(indStart+indOffset:indEnd+indOffset,:);
+lapInds = lapInds-indStart+1;
+newfilename = [filename(1:end-4),'_cut'];
+% save(newfilename,'data','lapInds');
