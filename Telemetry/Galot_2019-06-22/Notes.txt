@@ -33,3 +33,13 @@ Notes from Galot practice run Jun 22, 2019
 		mini lap, one full lap, mini lap
 		Joulemeter says 9290J
 		BMS says 9399J
+
+*lunch break*
+
+5:15PM
+	racesim - 'racesim1.TXT'
+		clockwise, 7 laps
+		Olga driving
+		race sim
+		Joulemeter says 38582J - mi/kwh
+		BMS says  39383J - mi/kwh
