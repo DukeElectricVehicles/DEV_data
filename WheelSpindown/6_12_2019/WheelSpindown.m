@@ -8,7 +8,7 @@ I = I + 0.020 * 0.23^2; %Sealant
 I = I + 0.380 * 0.20^2; %DX32 rim
 I = I + 0.170 * 0.13^2; %Spokes
 
-filesStruct = dir('mich*.txt');
+filesStruct = dir('*s*.txt');
 
 for i = 1:numel(filesStruct)
     filename = filesStruct(i).name;
@@ -30,7 +30,7 @@ for i = 1:numel(filesStruct)
     
     dragModel = @(k, v) k(1) + k(2) * v.^2;
     
-    coeffs = lsqcurvefit(dragModel, [-0.02, -0.001], velo(valid), torque(valid), [], [], optimset('Display','off'))
+    coeffs = lsqcurvefit(dragModel, [-0.02, -0.001], velo(valid), torque(valid), [], [], optimset('Display','off'));
     xspaced = linspace(0, 60, 1000);
     
     figure(1);
