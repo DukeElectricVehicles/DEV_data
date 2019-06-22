@@ -8,3 +8,9 @@ Notes from Galot practice run Jun 22, 2019
 		Hall sensor wheel reading twice the distance/speed
 		One full lap, one mini-lap
 		Downhill turn much too narrow, hit a cone
+
+1:07PM
+	flying laps 1 - 'flyinglaps1.TXT'
+		Olga driving, trying her best
+		Couple full laps, one mini-lap
+		Joulemeter says 30773J
