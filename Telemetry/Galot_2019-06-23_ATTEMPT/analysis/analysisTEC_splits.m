@@ -1,18 +1,22 @@
 %% Patrick Grady
 %  Nov. 2017
 
+trackLength_m = 1947.1;
+
 clear; %clc; close all;
 
 % filenames = sprintfc('../installationLap.TXT',0);
 % filenames = sprintfc('../installationLap_cut.mat',0);
-filenames = sprintfc('../flyinglaps3_cut.mat',0);
-filenames = sprintfc('../flyinglaps2.TXT',0);
+filenames = sprintfc('../pretrialtest1_cut.mat',0);
+% filenames = sprintfc('../flyinglaps2_cut.mat',0);
 
+windows = [];
 data = zeros(1,12);
 for i = 1:length(filenames)
-    datanew = importdata(filenames{i});
-    % data = data(16830:end, :);
-    %datanew = [datanew(:, 1:6) datanew(:, 6:end)];%insert extra column because I messed up format
+    datanew = load(filenames{i});
+    lapInds = datanew.lapInds';
+    windows = [windows; [lapInds(1:end-1),lapInds(2:end)]];
+    datanew = datanew.data;
     datanew(:,10) = datanew(:,10) - datanew(1,10) + data(end,10) + 10000; % add time
     datanew(:,6) = datanew(:,6) - datanew(1,6) + data(end,6) + 1000; % add time
     data = [data; datanew];
@@ -60,6 +64,12 @@ deltaTE = zeros(size(velo));
 dist = dist - dist(1);
 energy = energy - energy(1);
 elapsed = elapsed - elapsed(1);
+% for j = 1:size(windows,1)
+%     i = windows(j,1);
+%     dist(i:end) = dist(i:end)-dist(i);
+%     energy(i:end) = energy(i:end)-energy(i);
+%     elapsed(i:end) = elapsed(i:end)-elapsed(i);
+% end
 
 wheelDia = .475;
 kv = 26.6;
@@ -105,6 +115,17 @@ deltaTE = smooth(deltaTE, ACCEL_WINDOW);
 % end
 
 accelComp = deltaTE ./ (velo * mass);
+
+for i = 1:size(windows,1)
+    fprintf('v split: %.3f\n', mean(velo(windows(i,1):windows(i,2))))
+end
+for i = 1:size(windows,1)
+    ind1 = windows(i,1);
+    ind2 = windows(i,2);
+    fprintf('mpkwh split: %.3f\n', ...
+        ((dist(ind2)-dist(ind1)) / 1609) / ...
+        ((energy(ind2)-energy(ind1) - te(ind2)+te(ind1)) / 3.6e6));
+end
 
 %% Plot start/stop lines--------------------------------------------
 % figure(1); clf;
@@ -173,10 +194,10 @@ plot(lon(1),lat(1),'r*');
 plot(lon(end),lat(end),'r*');
 
 figure(4); clf;
-p1 = plot(dist, mipkwhTEC);
+p1 = plot(dist, mipkwhTEC,'.');
 ylim([0 1000]); ylabel('Score');
 hold on; grid on;
-plot(dist, mipkwh);
+plot(dist, mipkwh,'.');
 legend('Total Energy Compensation','raw');
 fprintf('mipkwhTEC: %.2f\n',mipkwhTEC(end));
 
@@ -187,15 +208,15 @@ totalPower = smooth(totalPower, tpW*2+1);
 
 figure(5); clf;
 a = subplot(3, 1, 1);
-plot(elapsed, totalPower); hold on;
-plot(elapsed, smooth(power, 51)); grid on;
+plot(elapsed, totalPower,'.'); hold on;
+plot(elapsed, smooth(power, 51),'.'); grid on;
 ylabel('Power'); legend('Total Power','Motor power');
 ylim([-50 100]);
 b = subplot(3, 1, 2);
-plot(elapsed, velo); grid on;
+plot(elapsed, velo,'.'); grid on;
 ylabel('Velocity');
 c = subplot(3,1,3);
-plot(elapsed, mipkwhTEC);
+plot(elapsed, mipkwhTEC,'.');
 ylabel('Score (total energy compensated)');
 linkaxes([a,b,c], 'x');
 xlabel('time');
