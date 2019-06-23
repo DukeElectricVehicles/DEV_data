@@ -7,7 +7,8 @@ clear; %clc; close all;
 
 % filenames = sprintfc('../installationLap.TXT',0);
 % filenames = sprintfc('../installationLap_cut.mat',0);
-filenames = sprintfc('../pretrialtest1_cut.mat',0);
+% filenames = sprintfc('../ATTEMPT1_80PSI_CUT.mat',0);
+filenames = sprintfc('../ATTEMPT2_ABORT_CUT.mat',0);
 % filenames = sprintfc('../flyinglaps2_cut.mat',0);
 
 windows = [];
@@ -210,6 +211,11 @@ figure(5); clf;
 a = subplot(3, 1, 1);
 plot(elapsed, totalPower,'.'); hold on;
 plot(elapsed, smooth(power, 51),'.'); grid on;
+for i = 1:size(windows,1)
+    line([elapsed(windows(1,2)),elapsed(windows(1,2))],[0;100]);
+
+    line([elapsed(windows(1,2)),elapsed(windows(1,2))],[0;100]);
+line([elapsed(windows(1,2)),elapsed(windows(1,2))],[0;100]);
 ylabel('Power'); legend('Total Power','Motor power');
 ylim([-50 100]);
 b = subplot(3, 1, 2);
@@ -221,14 +227,14 @@ ylabel('Score (total energy compensated)');
 linkaxes([a,b,c], 'x');
 xlabel('time');
 
-figure(6);
+figure(6); clf;
 title('Power, velocity*10, motor power');
 scatter3(x, y, totalPower); hold on;
-scatter3(x, y, velo * 10);
-scatter3(x, y, power);
+% scatter3(x, y, velo * 10);
+% scatter3(x, y, power);
 zlim([-50 100]);
 
-figure(7);
+figure(7); clf;
 plot(current, voltage - emf, '.'); hold on; grid on;
 xlabel('Current in A');
 ylabel('BMS voltage - emf');
