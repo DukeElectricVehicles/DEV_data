@@ -8,7 +8,8 @@ clear; %clc; close all;
 % filenames = sprintfc('../installationLap.TXT',0);
 % filenames = sprintfc('../installationLap_cut.mat',0);
 % filenames = sprintfc('../ATTEMPT1_80PSI_CUT.mat',0);
-filenames = sprintfc('../ATTEMPT2_ABORT_CUT.mat',0);
+% filenames = sprintfc('../ATTEMPT2_ABORT_CUT.mat',0);
+filenames = sprintfc('../ATTEMPT3_95PSI_CUT.mat',0);
 % filenames = sprintfc('../flyinglaps2_cut.mat',0);
 
 windows = [];
@@ -212,10 +213,8 @@ a = subplot(3, 1, 1);
 plot(elapsed, totalPower,'.'); hold on;
 plot(elapsed, smooth(power, 51),'.'); grid on;
 for i = 1:size(windows,1)
-    line([elapsed(windows(1,2)),elapsed(windows(1,2))],[0;100]);
-
-    line([elapsed(windows(1,2)),elapsed(windows(1,2))],[0;100]);
-line([elapsed(windows(1,2)),elapsed(windows(1,2))],[0;100]);
+    line([elapsed(windows(i,2)),elapsed(windows(i,2))],[0;100]);
+end
 ylabel('Power'); legend('Total Power','Motor power');
 ylim([-50 100]);
 b = subplot(3, 1, 2);

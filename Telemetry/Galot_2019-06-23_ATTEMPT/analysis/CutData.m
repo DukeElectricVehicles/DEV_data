@@ -4,7 +4,7 @@
 clear;
 
 % filename = '../flyingLaps3.TXT';
-filename = '../ATTEMPT2_ABORT.TXT';
+filename = '../ATTEMPT3_95PSI.TXT';
 
 %% import
 data = importdata(filename);
