@@ -1,11 +1,13 @@
 %% Patrick Grady
 %  Nov. 2017
 
+trackLength_m = 1947.1;
+
 clear; %clc; close all;
 
 % filenames = sprintfc('../installationLap.TXT',0);
 % filenames = sprintfc('../installationLap_cut.mat',0);
-filenames = sprintfc('../racesim1_cut.mat',0);
+filenames = sprintfc('../racesim4_cut.mat',0);
 % filenames = sprintfc('../flyinglaps2_cut.mat',0);
 
 windows = [];

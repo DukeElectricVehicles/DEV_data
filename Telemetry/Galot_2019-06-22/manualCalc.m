@@ -4,7 +4,7 @@ secs = 51;
 
 
 %jouletotal = 17819; laps = 3; %practice 1
-jouletotal = 38582; laps = 7; %practice 2
+jouletotal = 40601; laps = 7; %practice 2
 
 distance = laps * 6388.10 / 3.28084;
 secs = secs + mins * 60;

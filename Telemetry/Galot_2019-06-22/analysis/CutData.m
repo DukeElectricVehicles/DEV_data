@@ -4,7 +4,7 @@
 clear;
 
 % filename = '../flyingLaps3.TXT';
-filename = '../racesim1.TXT';
+filename = '../racesim4.TXT';
 
 %% import
 data = importdata(filename);
@@ -109,7 +109,7 @@ indEnd = lapInds(end);
 indOffset = 0;
 
 %%
-% data = data(indStart+indOffset:indEnd+indOffset,:);
-% lapInds = lapInds-indStart+1;
-% newfilename = [filename(1:end-4),'_cut'];
-% save(newfilename,'data','lapInds');
+data = data(indStart+indOffset:indEnd+indOffset,:);
+lapInds = lapInds-indStart+1;
+newfilename = [filename(1:end-4),'_cut'];
+save(newfilename,'data','lapInds');
