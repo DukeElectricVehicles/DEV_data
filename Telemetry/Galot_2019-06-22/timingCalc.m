@@ -1,8 +1,8 @@
-laps = 3;
+laps = 7;
 distance = laps * 6388.10 / 3.28084;
 v = 6.706;
 startupTime = 15;
-endTime = 20;
+endTime = 30;
 
 totTime = distance / v;
 [totSec, totMin] = secToMin(totTime);
