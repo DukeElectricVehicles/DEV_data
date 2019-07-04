@@ -1,4 +1,4 @@
-function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
+function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot)
 
     global PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM
     global ROT_INERTIA
@@ -67,17 +67,27 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
 %     R2 = corrcoef(current(currCutoff:end), polyval(currOfRPM, rpm_motor(currCutoff:end)));
 %     R2 = R2(1,2)^2;
     [CoRV,int,~,~,stats] = regress(current,[rpm_motor,voltage]);
-    R2 = stats(1);
-    assert (R2 > 0.99, 'Kv calculation bad due to excessive nonlinearity\n');
+    R2lin = stats(1);
+%     assert (R2 > 0.99, 'Kv calculation bad due to excessive nonlinearity\n');
 %     assert (abs(CoRV(3)) < 0, 'y intercept problem');
     Rs = 1/CoRV(2);
     Ke = -CoRV(1) * Rs;
     Kv = 1/Ke;
     
+    toFit = current<18 & current>0;
+    y = ePower(toFit) - current(toFit).^2*Rs - mPower(toFit);
+    mysteryLosses = polyfit(rpm_motor(toFit), y, 3);
+%     y2 = y./rpm_motor(toFit); y2(isnan(y2)) = 0;
+%     mysteryLosses = polyfit(rpm_motor(toFit), y2, 2); mysteryLosses(end+1) = 0;
+    y = smooth(y,100);
+    R2 = 1 - ...
+        sum((polyval(mysteryLosses,rpm_motor(toFit)) - y).^2) / sum((y-mean(y)).^2);
+    
     fprintf('%s:\n',filename);
-    fprintf('\tI = '); fprintf('(%.3f)RPM + (%.3f)V', CoRV);
-    fprintf('(R2 = %.5f)\n', R2);
+    fprintf('\tI = '); fprintf('(%.3f)RPM + (%.3f)V\t', CoRV);
+    fprintf('(R2 = %.5f)\n', R2lin);
     fprintf('\tRs = %.6fohms\n\tKv = %.6f\n',Rs,Kv);
+    fprintf('\tR2 = %.6f\n',R2);
     
     filename = strrep(filename,'_',' ');
     filename = strrep(filename,',','.');
@@ -85,31 +95,43 @@ function [Rs, Kv] = analyzeSingle(filePath, linecolor, toPlot)
     if (toPlot)
         figure(1);
     %     yyaxis left
-        plot(rpm_motor, eff, [linecolor,'-'], 'DisplayName', filename); hold on;
+        plot(rpm_motor, eff, ['-'], 'DisplayName', filename,'Color',linecolor); hold on;
     %     yyaxis right
     %     plot(rpmMotor, mPower, '-');
 
         figure(2);
-        scatter3(rpm_motor, mPower, eff, [linecolor,'.'], 'DisplayName', filename); hold on;
+        plot3(rpm_motor, mPower, eff, ['.'], 'Color', linecolor, 'DisplayName', filename); hold on;
 
         figure(3);
         ax1 = subplot(2,1,1);
-        plot(rpm_motor, voltage, [linecolor,'.'], 'DisplayName', filename); hold on;
+        plot(rpm_motor, voltage, ['.'], 'Color', linecolor, 'DisplayName', filename); hold on;
         ax2 = subplot(2,1,2);
-        plot(rpm_motor, current, [linecolor,'.'], 'DisplayName', filename); hold on;
-        plot(rpm_motor, [rpm_motor,voltage]*CoRV, [linecolor,':'], 'DisplayName', filename);
+        plot(rpm_motor, current, ['.'], 'Color', linecolor, 'DisplayName', filename); hold on;
+        plot(rpm_motor, [rpm_motor,voltage]*CoRV, [':'], 'Color', linecolor, 'DisplayName', filename);
         linkaxes([ax1,ax2],'x');
 
         figure(4);
-        plot(rpm_motor, accel, linecolor, 'DisplayName',filename); hold on;
+        plot(rpm_motor, accel, 'Color', linecolor, 'DisplayName',filename); hold on;
 
-        currentPlot = smooth(current, 54*72/60);
+        currentPlot = smooth(current, 54*13/60);
         figure(5);
         yyaxis left
-        plot(currentPlot, rpm_motor, [linecolor,'-'], 'DisplayName','RPM','HandleVisibility',legendShow); hold on;
+        currentPlot2 = smooth(currentPlot,300);
+        plot(currentPlot2(1:50:end), rpm_motor(1:50:end), ['-'], 'Color', linecolor, 'DisplayName','RPM','HandleVisibility',legendShow); hold on;
         yyaxis right
-        plot(currentPlot(1:100:end), torque(1:100:end)/9.81*100, [linecolor,'^'], 'DisplayName','Torque (kgf.cm)','HandleVisibility',legendShow,'MarkerSize',5); hold on;
-        plot(currentPlot, eff*100, [linecolor,'.'], 'DisplayName','Efficiency (%)','HandleVisibility',legendShow,'MarkerSize',1);
+        cToPlot = linspace(0,18,50);% +rand(1)*18/50;
+        t1 = smooth(torque,50);
+        torqueToPlot = spline(currentPlot(1:100:end),13/60*t1(1:100:end),cToPlot);
+        torqueToPlot = deleteoutliers(torqueToPlot,[],1);
+        sum(isnan(torqueToPlot))
+        plot(cToPlot, torqueToPlot*100, ['^'], 'Color', linecolor, 'DisplayName','Torque (N.cm)','HandleVisibility',legendShow,'MarkerSize',5); hold on;
+        plot(currentPlot(1:10:end), eff(1:10:end)*100, ['.'], 'Color', linecolor, 'DisplayName','Efficiency (\%)','HandleVisibility',legendShow,'MarkerSize',1);
+        
+        figure(6);
+        plot(currentPlot, smooth(ePower - mPower,500), '-', 'Color',linecolor,'DisplayName', filename); hold on;
+        
+%         eff2 = 1 - (currentPlot(toFit).^2*Rs + polyval(mysteryLosses,rpm_motor(toFit)))./ePower(toFit);
+%         plot(currentPlot(toFit), eff2*100, ['<'], 'Color', linecolor, 'DisplayName','Efficiency (%)','HandleVisibility',legendShow,'MarkerSize',10);
         legendShow = 'off';
     end
 end
