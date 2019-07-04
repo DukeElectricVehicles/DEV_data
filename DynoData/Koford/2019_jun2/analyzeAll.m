@@ -60,6 +60,7 @@ allRs = [];
 allKv = [];
 allMys = [];
 allR2 = [];
+allVofI = [];
 allChar = [];
 for i = 1:numel(filesStruct)
     filename = replace(filesStruct(i).name,',','.');
@@ -76,11 +77,12 @@ for i = 1:numel(filesStruct)
     linecolor = allPlotColors(find(ismemberstruct(allParameters,stuff)),:);
     filePath = strcat(filesStruct(i).folder, '/', filesStruct(i).name);
     
-    [Rs, Kv, mys, R2] = analyzeSingle(filePath, linecolor, true);
+    [Rs, Kv, mys, R2, VofI] = analyzeSingle(filePath, linecolor, true);
     allRs = [allRs; Rs];
     allKv = [allKv; Kv];
     allMys = [allMys; mys];
     allR2 = [allR2; R2];
+    allVofI = [allVofI; VofI];
     allChar = [allChar; find(ismemberstruct(allParameters,stuff))];
 end
 
@@ -117,6 +119,7 @@ subplot(2,1,1);
 legend(gca,'show');
 ylabel('Voltage'); title('Voltage and Current vs Speed (DEV Controller)');
 ylim([0,20]);
+grid on;
 subplot(2,1,2);
 legend show
 xlabel('RPM'); ylabel('Current');

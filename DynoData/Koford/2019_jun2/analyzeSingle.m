@@ -1,4 +1,4 @@
-function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot)
+function [Rs, Kv, mysteryLosses, R2, VofI] = analyzeSingle(filePath, linecolor, toPlot)
 
     global PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM
     global ROT_INERTIA
@@ -82,6 +82,8 @@ function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot
     y = smooth(y,100);
     R2 = 1 - ...
         sum((polyval(mysteryLosses,rpm_motor(toFit)) - y).^2) / sum((y-mean(y)).^2);
+    
+    VofI = polyfit(current(currCutoff:end),voltage(currCutoff:end),1);
     
     fprintf('%s:\n',filename);
     fprintf('\tI = '); fprintf('(%.3f)RPM + (%.3f)V\t', CoRV);
