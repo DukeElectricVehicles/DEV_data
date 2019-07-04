@@ -13,9 +13,9 @@ load ../spindown/spindown_noChain_jun2_before
 filesStruct = dir('*.txt');
 
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)_\d\.txt';
-% filenameFormat = 'PS(?<voltage>\d+)V(?<comm>.*?)_D(?<duty>-?[01].\d+)(?<mode>sync)?_\d\.txt';
+filenameFormat = 'PS(?<voltage>\d+)V(?<comm>.*?)_D(?<duty>-?[01].\d+)(?<mode>sync)?_\d\.txt';
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)(?<mode>sync)?_a(?<advance>-?\d+)_\d\.txt';
-filenameFormat = 'PS(?<current>\d+)A(?<comm>.*?)_D(?<duty>[01].\d+)(?<mode>sync)?_\d\.txt';
+% filenameFormat = 'PS(?<current>\d+)A(?<comm>.*?)_D(?<duty>[01].\d+)(?<mode>sync)?_\d\.txt';
 
 ismemberstruct = @(A, B) arrayfun( @(x) isequal( B, x ), A );
 allParameters = [];
@@ -95,12 +95,11 @@ set(groot, 'defaultLegendInterpreter','latex');
 set(groot, 'defaultTextInterpreter','latex');
 
 figure(1);
-legend(gca,'show','Location','SouthEast');
+legend(gca,'show','Location','NorthWest');
 % yyaxis left
 xlabel('RPM'); ylabel('Efficiency (\%)'); title('Efficiency vs Speed');
 grid on;
-ylim([0.75, 0.90]);
-xlim([750,3000]);
+ylim([0.6, .95]);
 % xlim([1000,4000]);
 % yyaxis right
 % ylabel('Power');
@@ -141,18 +140,18 @@ ylabel('Speed (RPM)'); ylim([0,5000]);
 yyaxis right
 ylabel('Torque (N.cm) and Efficiency (\%)'); ylim([0,100]);
 width = 4;
-rectangle('Position',[12,5,width,2*(2+length(allParameters))],'FaceColor','w');
+rectangle('Position',[12,5,width,4*(2+length(allParameters))],'FaceColor','w');
 for i = 1:length(allParameters)
     fields = fieldnames(allParameters(i));
     vals = cellfun(@(f) getfield(allParameters(i),f),fields,'UniformOutput',false);
     fields = cellfun(@(f) f(1:end), fields,'UniformOutput',false);
     allP = {fields{[1]};vals{[1]}};
 %     allP = {'advance',allParameters(i).advance};
-    text(12+width/2, 5+2*(length(allParameters)-i+2), ...
+    text(12+width/2, 5+4*(length(allParameters)-i+2), ...
         sprintf('%s=%sV', allP{:}),...
         'Color',allPlotColors(i,:),'FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
 end
-text(12+width/2, 5+2*(1), 'motor model', ...
+text(12+width/2, 5+4*(1), 'motor model', ...
         'Color','r','FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
     
 figure(6);
