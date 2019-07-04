@@ -1,4 +1,4 @@
-Notes from Galot practice run Jun 22, 2019
+Notes from Galot practice run Jun 23, 2019
 	This is the saturday the day before the sunday originally proposed record attempt.  Monday, we were getting low numbers and couldn't tell what was wrong so we are more or less just hoping it was a fluke/weather related/driver strategy related and trying again today.  If successful, we will ask the judges to come tomorrow.
 
 
@@ -14,3 +14,5 @@ Notes from Galot practice run Jun 22, 2019
 	attempt - 'ATTEMPT2_90PSI.txt'
 		90PSI
 		Joulemeter read 
+
+		Gerry forgot to keep track after this
