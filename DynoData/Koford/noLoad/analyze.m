@@ -44,7 +44,7 @@ PvsERPM = polyfit(rpm,power./rpm,2); PvsERPM(end+1) = 0;
 R2 = 1 - sum((power - polyval(PvsERPM,rpm)).^2) ./ sum((power-mean(power)).^2)
 ERPMvals = linspace(0,max(rpm)*1.1);
 
-% save('nonElectricalLosses','PvsERPM');
+save('nonElectricalLosses','PvsERPM');
 
 %% plot
 set(groot, 'defaultAxesTickLabelInterpreter','latex');

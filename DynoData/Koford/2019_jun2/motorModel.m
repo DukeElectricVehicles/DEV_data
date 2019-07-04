@@ -49,7 +49,7 @@ for i = 1:length(allParameters)
     modelRsTmp = sqrt(modelRs.^2 + (modelLs*modelRPM*2 / 60 * 2 * pi).^2);
     modelRPM = (V - IVals.*modelRsTmp) * modelKv;
     
-    modelTorque = IVals * modelKt;
+    modelTorque = (IVals-0.25) * modelKt;
     modelLosses = [IVals.^2.*modelRs, ...           % I2R
                    polyval(PvsERPM,modelRPM*2), ... % nonelectrical
                    0.3*ones(size(modelRPM)), ...    % controller
