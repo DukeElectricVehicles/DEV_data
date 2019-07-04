@@ -95,7 +95,13 @@ function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot
     if (toPlot)
         figure(1);
     %     yyaxis left
-        plot(rpm_motor, eff, ['-'], 'DisplayName', filename,'Color',linecolor); hold on;
+        rpmCut = rpm_motor>1150;
+        if (filename(end-4)=='0')
+            visi = 'on';
+        else
+            visi = 'off';
+        end
+        plot(rpm_motor(rpmCut), smooth(eff(rpmCut),800), ['-'], 'DisplayName', filename(3:5),'Color',linecolor,'HandleVisibility',visi); hold on;
     %     yyaxis right
     %     plot(rpmMotor, mPower, '-');
 
@@ -119,12 +125,12 @@ function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot
         currentPlot2 = smooth(currentPlot,300);
         plot(currentPlot2(1:50:end), rpm_motor(1:50:end), ['-'], 'Color', linecolor, 'DisplayName','RPM','HandleVisibility',legendShow); hold on;
         yyaxis right
-        cToPlot = linspace(0,18,50);% +rand(1)*18/50;
-        t1 = smooth(torque,50);
-        torqueToPlot = spline(currentPlot(1:100:end),13/60*t1(1:100:end),cToPlot);
-        torqueToPlot = deleteoutliers(torqueToPlot,[],1);
-        sum(isnan(torqueToPlot))
-        plot(cToPlot, torqueToPlot*100, ['^'], 'Color', linecolor, 'DisplayName','Torque (N.cm)','HandleVisibility',legendShow,'MarkerSize',5); hold on;
+%         cToPlot = linspace(0,18,50);% +rand(1)*18/50;
+%         t1 = smooth(torque,50);
+%         torqueToPlot = spline(currentPlot(1:100:end),13/60*t1(1:100:end),cToPlot);
+%         torqueToPlot = deleteoutliers(torqueToPlot,[],1);
+%         plot(cToPlot, torqueToPlot*100, ['^'], 'Color', linecolor, 'DisplayName','Torque (N.cm)','HandleVisibility',legendShow,'MarkerSize',5); hold on;
+        plot(currentPlot(1:200:end), torque(1:200:end)*100, ['^'], 'Color', linecolor, 'DisplayName','Torque (N.cm)','HandleVisibility',legendShow,'MarkerSize',5); hold on;
         plot(currentPlot(1:10:end), eff(1:10:end)*100, ['.'], 'Color', linecolor, 'DisplayName','Efficiency (\%)','HandleVisibility',legendShow,'MarkerSize',1);
         
         figure(6);

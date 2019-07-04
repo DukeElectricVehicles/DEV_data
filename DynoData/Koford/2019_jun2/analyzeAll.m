@@ -13,9 +13,9 @@ load ../spindown/spindown_noChain_jun2_before
 filesStruct = dir('*.txt');
 
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)_\d\.txt';
-filenameFormat = 'PS(?<voltage>\d+)V(?<comm>.*?)_D(?<duty>-?[01].\d+)(?<mode>sync)?_\d\.txt';
+% filenameFormat = 'PS(?<voltage>\d+)V(?<comm>.*?)_D(?<duty>-?[01].\d+)(?<mode>sync)?_\d\.txt';
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)(?<mode>sync)?_a(?<advance>-?\d+)_\d\.txt';
-% filenameFormat = 'PS(?<current>\d+)A(?<comm>.*?)_D(?<duty>[01].\d+)(?<mode>sync)?_\d\.txt';
+filenameFormat = 'PS(?<current>\d+)A(?<comm>.*?)_D(?<duty>[01].\d+)(?<mode>sync)?_\d\.txt';
 
 ismemberstruct = @(A, B) arrayfun( @(x) isequal( B, x ), A );
 allParameters = [];
@@ -95,12 +95,13 @@ set(groot, 'defaultLegendInterpreter','latex');
 set(groot, 'defaultTextInterpreter','latex');
 
 figure(1);
-legend(gca,'show','Location','NorthWest');
+legend(gca,'show','Location','SouthEast');
 % yyaxis left
 xlabel('RPM'); ylabel('Efficiency (\%)'); title('Efficiency vs Speed');
 grid on;
-ylim([0.7, .95]);
-xlim([1000,4000]);
+ylim([0.75, 0.90]);
+xlim([750,3000]);
+% xlim([1000,4000]);
 % yyaxis right
 % ylabel('Power');
 

@@ -1,16 +1,19 @@
 %% process Model
 
 if (exist('p1','var'))
+    delete(p0);
     delete(p1);
     delete(p2);
     delete(p3);
+    delete(p4);
 end
 load ../noLoad/nonElectricalLosses
 % load ../spindown/chain+mag_sketchy
 % mystery = mean(allMys(allR2>.35,:),1);
-modelKv = mean(allKv);
-modelRs = mean(allRs)*1.1;
+modelKv = 188.9025; % mean(allKv);
+modelRs = 0.2671; % mean(allRs)*1.1;
 modelKt = 1./(modelKv*2*pi/60);
+PvsERPM(2) = PvsERPM(2)*1.1;
 paramSets = table();
 for i = 1:length(allParameters)
     paramSets.Kv(i) = mean(allKv(allChar==i));
@@ -25,8 +28,9 @@ for i = 1:length(allParameters)
         paramSets.(field)(i,:) = getfield(allParameters(i),field);
     end
     
-    V = str2num(paramSets.voltage(i,:));
-    IVals = linspace(0,18,99)';
+    V = linspace(6,18,99)'; %str2num(paramSets.voltage(i,:));
+    IVals = str2num(paramSets.current(i,:))*ones(size(V)); %linspace(0,18,99)';
+    
 %     modelRPM = (V - IVals*paramSets.Rs(i)) * paramSets.Kv(i);
 %     modelTorque = IVals * paramSets.Kt(i) * 1;
 %     modelLosses = [IVals.^2*paramSets.Rs(i), polyval(PvsERPM,modelRPM*2)];
@@ -34,10 +38,13 @@ for i = 1:length(allParameters)
     modelTorque = IVals * modelKt * 1;
     modelLosses = [IVals.^2*modelRs, polyval(PvsERPM,modelRPM*2)];
 %     modelLosses = [IVals.^2*paramSets.Rs(i), polyval(paramSets.Mys(i,:),modelRPM)];
-    modelEff = 1 - sum(modelLosses,2) ./ (IVals * V);
+    modelEff = 1 - sum(modelLosses,2) ./ (IVals .* V);
     
 %     linecolor = allPlotColors{mod(i-1,length(allPlotColors))+1};
     linecolor = 'r';
+    
+    figure(1);
+    p0(i)=plot(modelRPM,modelEff,'r-','DisplayName',['model - ',num2str(IVals(1)),'A']);
     
     figure(5);
     yyaxis left
@@ -48,7 +55,7 @@ for i = 1:length(allParameters)
     legendShow = 'off';
     
     figure(6);
-    plot(IVals, sum(modelLosses,2), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(V),'V']); hold on;
+    p4(i)=plot(IVals, sum(modelLosses,2), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(V(1)),'V']); hold on;
 end
 paramSets.Kv(length(allParameters)+1) = modelKv;
 paramSets.Rs(length(allParameters)+1) = modelRs;
