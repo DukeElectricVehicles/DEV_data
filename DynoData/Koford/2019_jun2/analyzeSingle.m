@@ -1,4 +1,4 @@
-function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot)
+function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot, stuff)
 
     global PARASITIC_LOSSES_ACC_OF_FLYWHEEL_RPS PARASITIC_LOSSES_POWER_OF_FLYWHEEL_RPM
     global ROT_INERTIA
@@ -101,7 +101,7 @@ function [Rs, Kv, mysteryLosses, R2] = analyzeSingle(filePath, linecolor, toPlot
         else
             visi = 'off';
         end
-        plot(rpm_motor(currCutoff:end), smooth(eff(currCutoff:end),800), ['-'], 'DisplayName', filename(3:5),'Color',linecolor,'HandleVisibility',visi); hold on;
+        plot(rpm_motor(currCutoff:end), smooth(eff(currCutoff:end),800), ['-'], 'DisplayName', sprintf('$%d^\circ{}$ advance\n',fix(str2num(stuff.advance)*.15)),'Color',linecolor,'HandleVisibility',visi); hold on;
     %     yyaxis right
     %     plot(rpmMotor, mPower, '-');
 
