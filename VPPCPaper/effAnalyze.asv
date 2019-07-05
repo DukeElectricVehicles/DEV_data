@@ -43,10 +43,10 @@ lossPower = h2power - power;
 %plot(power, power ./ (powerByCurrent + leakPower)); hold on;
 %plot(power, power ./ (powerByCurrent));
 cutPlotIdx = (power > 18) | (power < 16);
-cutFitIdx = ((power > 18) | (power < 16)) & (power > 5) & (power < 40);
+cutFitIdx = ((power > 18) | (power < 16)) & (power > 5);
 
 effFitCoeffs = polyfit(power(cutFitIdx), totalEff(cutFitIdx), 3);
-lossFitCoeffs = polyfit(power(cutFitIdx), lossPower(cutFitIdx), 2);
+lossFitCoeffs = polyfit(power(cutFitIdx), lossPower(cutFitIdx), 4);
 powerOutSweep = linspace(00, 100, 10000);
 
 effLossModelPin = powerOutSweep + polyval(lossFitCoeffs, powerOutSweep);
@@ -66,9 +66,9 @@ xlabel("Output power, watts")
 ylabel("Efficiency");
 title("Horizon H-100 Stack-Only Efficiency")
 
-figure;
-plot(power, lossPower); hold on;
-plot(powerOutSweep, polyval(lossFitCoeffs, powerOutSweep));
+% figure;
+% plot(power, lossPower); hold on;
+% plot(powerOutSweep, polyval(lossFitCoeffs, powerOutSweep));
 
 %figure();
 %plot(flowByCurrent + leakRate); hold on;
