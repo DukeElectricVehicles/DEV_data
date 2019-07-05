@@ -13,12 +13,14 @@ load ../spindown/spindown_noChain_jun2_before
 filesStruct = dir('*.txt');
 
 % filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)_\d\.txt';
-filenameFormat = 'PS(?<voltage>\d+)V(?<comm>.*?)_D(?<duty>-?[01].\d+)(?<mode>sync)?_\d\.txt';
-% filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)(?<mode>sync)?_a(?<advance>-?\d+)_\d\.txt';
+% filenameFormat = 'PS(?<voltage>\d+)V(?<comm>.*?)_D(?<duty>-?[01].\d+)(?<mode>sync)?_\d\.txt';
+filenameFormat = 'PS(?<voltage>\d+)V_D(?<duty>[01].\d+)(?<mode>sync)?_a(?<advance>-?\d+)_\d\.txt';
 % filenameFormat = 'PS(?<current>\d+)A(?<comm>.*?)_D(?<duty>[01].\d+)(?<mode>sync)?_\d\.txt';
 
 ismemberstruct = @(A, B) arrayfun( @(x) isequal( B, x ), A );
 allParameters = [];
+inds = [];
+sortVals = [];
 % fileInds = zeros(length(filesStruct),1);
 for i = 1:numel(filesStruct)
     filename = replace(filesStruct(i).name,',','.');
@@ -30,9 +32,9 @@ for i = 1:numel(filesStruct)
     if (str2num(stuff.duty)~=1)
         continue;
     end
-    if (length(stuff.comm)~=0)
-        continue;
-    end
+%     if (length(stuff.comm)~=0)
+%         continue;
+%     end
 %     if (str2num(stuff.duty)>=0)
 %         continue;
 %     end
@@ -45,6 +47,8 @@ for i = 1:numel(filesStruct)
 %     if (~contains(stuff.mode,'sync') && (str2num(stuff.voltage)~=12) && (str2num(stuff.voltage)~=9))
 %         continue
 %     end
+    inds = [inds;i];
+    sortVals = [sortVals,str2num(stuff.advance)];
     if (~any(ismemberstruct(allParameters,stuff)))
         allParameters = [allParameters, stuff];
 %         stuff.comm = '';
@@ -54,6 +58,11 @@ for i = 1:numel(filesStruct)
     end
 end
 allPlotColors = parula(length(allParameters)+2);
+[b,oeu] = sort(sortVals);
+inds = inds(oeu);
+for i=1:length(allParameters); dummy(i) = str2num(allParameters(i).advance); end;
+[~,inds2] = sort(dummy);
+allParameters = allParameters(inds2);
 
 %%
 allRs = [];
@@ -61,7 +70,7 @@ allKv = [];
 allMys = [];
 allR2 = [];
 allChar = [];
-for i = 1:numel(filesStruct)
+for i = inds'
     filename = replace(filesStruct(i).name,',','.');
     stuff = regexp(filename,filenameFormat,'names');
     try
@@ -73,10 +82,10 @@ for i = 1:numel(filesStruct)
     catch error
         continue
     end
-    linecolor = allPlotColors(find(ismemberstruct(allParameters,stuff)),:);
+    linecolor = allPlotColors(oeu(find(ismemberstruct(allParameters,stuff))),:);
     filePath = strcat(filesStruct(i).folder, '/', filesStruct(i).name);
     
-    [Rs, Kv, mys, R2] = analyzeSingle(filePath, linecolor, true);
+    [Rs, Kv, mys, R2] = analyzeSingle(filePath, linecolor, true, stuff);
     allRs = [allRs; Rs];
     allKv = [allKv; Kv];
     allMys = [allMys; mys];
@@ -85,9 +94,9 @@ for i = 1:numel(filesStruct)
 end
 
 %%
-motorModel
-fprintf('Kv = %.4f +/- %.4f\n', mean(allKv), std(allKv));
-fprintf('Rs = %.4f +/- %.4f\n', mean(allRs), std(allRs));
+% motorModel
+% fprintf('Kv = %.4f +/- %.4f\n', mean(allKv), std(allKv));
+% fprintf('Rs = %.4f +/- %.4f\n', mean(allRs), std(allRs));
 
 %%
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
@@ -97,9 +106,9 @@ set(groot, 'defaultTextInterpreter','latex');
 figure(1);
 legend(gca,'show','Location','NorthWest');
 % yyaxis left
-xlabel('RPM'); ylabel('Efficiency (\%)'); title('Efficiency vs Speed');
+xlabel('RPM'); ylabel('Efficiency (\%)'); title('Effect of Phase Advance on Efficiency');
 grid on;
-ylim([0.6, .95]);
+ylim([0.5, .9]);
 % xlim([1000,4000]);
 % yyaxis right
 % ylabel('Power');
@@ -130,7 +139,6 @@ xlabel('RPM'); ylabel('Acceleration');
 ylim([0,10]);
 grid on;
 
-
 figure(5);
 xlabel('Current'); title('Speed, Torque, and Efficiency vs Current'); grid on
 xlim([0,18]);
@@ -140,18 +148,18 @@ ylabel('Speed (RPM)'); ylim([0,5000]);
 yyaxis right
 ylabel('Torque (N.cm) and Efficiency (\%)'); ylim([0,100]);
 width = 4;
-rectangle('Position',[12,5,width,4*(2+length(allParameters))],'FaceColor','w');
+rectangle('Position',[13,5,width,4*(3+length(allParameters))],'FaceColor','w');
 for i = 1:length(allParameters)
     fields = fieldnames(allParameters(i));
     vals = cellfun(@(f) getfield(allParameters(i),f),fields,'UniformOutput',false);
     fields = cellfun(@(f) f(1:end), fields,'UniformOutput',false);
     allP = {fields{[1]};vals{[1]}};
 %     allP = {'advance',allParameters(i).advance};
-    text(12+width/2, 5+4*(length(allParameters)-i+2), ...
-        sprintf('%s=%sV', allP{:}),...
-        'Color',allPlotColors(i,:),'FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
+    text(13+width/2, 5+4*(length(allParameters)-i+2), ...
+        sprintf('$%d^\\circ{}$ advance\n',fix(str2num(allParameters(i).advance)*.15)),...
+        'Color',allPlotColors(oeu(i),:),'FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
 end
-text(12+width/2, 5+4*(1), 'motor model', ...
+text(13+width/2, 5+4*(1), 'motor model', ...
         'Color','r','FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
     
 figure(6);
