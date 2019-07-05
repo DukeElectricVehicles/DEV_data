@@ -47,29 +47,43 @@ cutFitIdx = ((power > 18) | (power < 16)) & (power > 5) & (power < 40);
 
 effFitCoeffs = polyfit(power(cutFitIdx), totalEff(cutFitIdx), 3);
 lossFitCoeffs = polyfit(power(cutFitIdx), lossPower(cutFitIdx), 2);
-powerOutSweep = linspace(00, 100, 10000);
+powerOutSweep = linspace(00, 100, 100);
+
+vcutFitIdx = ((power > 18) | (power < 16)) & (power > 2) & (power < 100);
+[vFitC, vFitS, vFitMu] = polyfit(power(vcutFitIdx), voltage(vcutFitIdx), 5);
 
 effLossModelPin = powerOutSweep + polyval(lossFitCoeffs, powerOutSweep);
 effLossModel = (powerOutSweep) ./ effLossModelPin;
 
-scatter(power(cutPlotIdx), totalEff(cutPlotIdx), 20, 'filled'); hold on;
+yyaxis left
+scatter(power(cutPlotIdx), totalEff(cutPlotIdx), 6, 'filled'); hold on;
 %scatter(powerOutSweep, polyval(effFitCoeffs, powerOutSweep), 10, 'filled'); hold on;
-scatter(powerOutSweep, effLossModel, 6, 'filled'); hold on;
+plot(powerOutSweep, effLossModel); hold on;
+ylim([0.45 0.75]);
+ylabel("Efficiency");
 
+yyaxis right
+IVcutPlotIdx = ((power > 18) | (power < 16)) & (power > 1);
+scatter(power(IVcutPlotIdx), voltage(IVcutPlotIdx), 6, 'filled'); hold on;
+plot(powerOutSweep, polyval(vFitC, powerOutSweep, [], vFitMu));
+ylim([8 19]);
+ylabel("Voltage, V");
 
 %plot(power, flow);
-legend('Measured efficiency', 'Fit')
+legend('Measured', 'Fit')
 
-ylim([0.45 0.65]);
+
 grid on;
 xlabel("Output power, watts")
-ylabel("Efficiency");
+
 title("Horizon H-100 Stack-Only Efficiency")
 
-figure;
-plot(power, lossPower); hold on;
-plot(powerOutSweep, polyval(lossFitCoeffs, powerOutSweep));
+% figure;
+% plot(power, lossPower); hold on;
+% plot(powerOutSweep, polyval(lossFitCoeffs, powerOutSweep));
 
 %figure();
 %plot(flowByCurrent + leakRate); hold on;
 %plot(flow);
+
+save('fcFit','vFitC','vFitMu', 'lossFitCoeffs');
