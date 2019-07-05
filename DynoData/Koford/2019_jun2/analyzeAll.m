@@ -33,6 +33,9 @@ for i = 1:numel(filesStruct)
     if (length(stuff.comm)~=0)
         continue;
     end
+    if (str2num(stuff.voltage)~=16)
+        continue;
+    end
 %     if (str2num(stuff.duty)>=0)
 %         continue;
 %     end
@@ -54,6 +57,7 @@ for i = 1:numel(filesStruct)
     end
 end
 allPlotColors = parula(length(allParameters)+2);
+allPlotColors = [0,0,0];
 
 %%
 allRs = [];
@@ -143,18 +147,20 @@ ylabel('Speed (RPM)'); ylim([0,5000]);
 yyaxis right
 ylabel('Torque (N.cm) and Efficiency (\%)'); ylim([0,100]);
 width = 4;
-rectangle('Position',[12,5,width,4*(2+length(allParameters))],'FaceColor','w');
+rectangle('Position',[12,5,width,4*(3+length(allParameters))],'FaceColor','w');
 for i = 1:length(allParameters)
     fields = fieldnames(allParameters(i));
     vals = cellfun(@(f) getfield(allParameters(i),f),fields,'UniformOutput',false);
     fields = cellfun(@(f) f(1:end), fields,'UniformOutput',false);
     allP = {fields{[1]};vals{[1]}};
 %     allP = {'advance',allParameters(i).advance};
-    text(12+width/2, 5+4*(length(allParameters)-i+2), ...
-        sprintf('%s=%sV', allP{:}),...
+    text(12+width/2, 5+4*(length(allParameters)-i+3), ...
+        sprintf('dyno data', allP{:}),...
         'Color',allPlotColors(i,:),'FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
 end
-text(12+width/2, 5+4*(1), 'motor model', ...
+text(12+width/2, 5+4*(2), 'motor model 1', ...
+        'Color','b','FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
+text(12+width/2, 5+4*(1), 'motor model 2', ...
         'Color','r','FontSize',12,'FontName','FixedWidth','HorizontalAlignment','center');
     
 figure(6);

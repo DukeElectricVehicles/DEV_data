@@ -60,6 +60,7 @@ for i = 1:length(allParameters)
 %     modelLosses = [IVals.^2*paramSets.Rs(i), polyval(paramSets.Mys(i,:),modelRPM)];
     IVals = IVals + .03; % controller
     modelEff = 1 - sum(modelLosses,2) ./ (IVals .* V);
+    modelEff(:,2) = 1 - sum(modelLosses(:,1:3),2) ./ (IVals.*V);
     
 %     linecolor = allPlotColors{mod(i-1,length(allPlotColors))+1};
     linecolor = 'r';
@@ -67,24 +68,46 @@ for i = 1:length(allParameters)
     nominalVoltage = str2num(paramSets.voltage(i,:));
     
     figure(1);
-    p0(i)=plot(modelRPM, modelEff, '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(nominalVoltage),'V']); hold on;
+    p0(i,1)=plot(modelRPM, modelEff(:,1), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(nominalVoltage),'V']); hold on;
     
     figure(3);
     subplot(2,1,1);
-    p5(i)=plot(modelRPM, V,'-','Color',linecolor','DisplayName', ['model - ',num2str(nominalVoltage),'V']);
+    p5(i,1)=plot(modelRPM, V,'-','Color',linecolor','DisplayName', ['model - ',num2str(nominalVoltage),'V']);
     subplot(2,1,2);
-    p6(i)=plot(modelRPM, IVals,'-','Color',linecolor','DisplayName', ['model - ',num2str(nominalVoltage),'V']);
+    p6(i,1)=plot(modelRPM, IVals,'-','Color',linecolor','DisplayName', ['model - ',num2str(nominalVoltage),'V']);
     
     figure(5);
     yyaxis left
-    p1(i)=plot(IVals, modelRPM, [linecolor,'-'],'HandleVisibility','off'); hold on;
+    p1(i,1)=plot(IVals, modelRPM, [linecolor,'-'],'HandleVisibility','off'); hold on;
     yyaxis right
-    p2(i)=plot(IVals(1:2:end), modelTorque(1:2:end)*100, [linecolor,'-'], 'MarkerSize',5,'HandleVisibility','off'); hold on;
-    p3(i)=plot(IVals, modelEff*100, [linecolor,'-'], 'MarkerSize',1,'HandleVisibility','off');
+    p2(i,1)=plot(IVals(1:2:end), modelTorque(1:2:end)*100, [linecolor,'-'], 'MarkerSize',5,'HandleVisibility','off'); hold on;
+    p3(i,1)=plot(IVals, modelEff(:,1)*100, [linecolor,'.'], 'LineWidth',1.5,'HandleVisibility','off');
     legendShow = 'off';
     
     figure(6);
-    p4(i)=plot(IVals, sum(modelLosses,2), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(nominalVoltage),'V']); hold on;
+    p4(i,1)=plot(IVals, sum(modelLosses,2), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(nominalVoltage),'V']); hold on;
+    
+    
+    linecolor = 'b';
+    figure(1);
+    p0(i,2)=plot(modelRPM, modelEff(:,2), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(nominalVoltage),'V']); hold on;
+    
+    figure(3);
+    subplot(2,1,1);
+    p5(i,2)=plot(modelRPM, V,'-','Color',linecolor','DisplayName', ['model - ',num2str(nominalVoltage),'V']);
+    subplot(2,1,2);
+    p6(i,2)=plot(modelRPM, IVals,'-','Color',linecolor','DisplayName', ['model - ',num2str(nominalVoltage),'V']);
+    
+    figure(5);
+    yyaxis left
+    p1(i,2)=plot(IVals, modelRPM, [linecolor,'-'],'HandleVisibility','off'); hold on;
+    yyaxis right
+    p2(i,2)=plot(IVals(1:2:end), modelTorque(1:2:end)*100, [linecolor,'-'], 'MarkerSize',5,'HandleVisibility','off'); hold on;
+    p3(i,2)=plot(IVals, modelEff(:,2)*100, [linecolor,'.'], 'LineWidth',1.5,'HandleVisibility','off');
+    legendShow = 'off';
+    
+    figure(6);
+    p4(i,2)=plot(IVals, sum(modelLosses,2), '-', 'Color',linecolor,'DisplayName', ['model - ',num2str(nominalVoltage),'V']); hold on;
 end
 paramSets.Kv(length(allParameters)+1) = modelKv;
 paramSets.Rs(length(allParameters)+1) = modelRs;
