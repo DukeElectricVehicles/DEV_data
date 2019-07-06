@@ -41,7 +41,7 @@ end
 
 %% TEC
 totalEnergy = [-smooth(H2energy,15), ...
-                smooth(SCenergy,5,'rlowess'), ...
+                smooth(SCenergy,1), ...
                 smooth(track.z*massTotal*9.81,7), ...
                 smooth(.5*massTotal*v.^2,9)];
 for i = 1:size(totalEnergy,2)
@@ -49,7 +49,7 @@ for i = 1:size(totalEnergy,2)
     totalPower(:,i) = smooth(totalPower(:,i),5);
 end
 totalPower(:,1) = circshift(totalPower(:,1),-8); % sketchy time offset
-totalPower(:,2) = circshift(totalPower(:,2),3) + 5;
+totalPower(:,2) = circshift(totalPower(:,2),3)+1.1;
 
 %% plotting
 set(groot, 'defaultAxesTickLabelInterpreter','latex');

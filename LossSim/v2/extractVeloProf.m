@@ -30,7 +30,8 @@ totalFlow = data(:, 16);
 instantEff = data(:, 17);
 h2Energy = totalFlow .* 1000 .* 119.93;
 h2Power = smooth(gradient(h2Energy)./gradient(elapsed),50);
-SCenergy = .5*171*SCvoltage.^2;
+% SCenergy = .5*191*SCvoltage.^2;
+SCenergy = cumtrapz(elapsed,vFC.*iFC - power);
 FCloss = smooth((gradient(h2Energy) - gradient(eFC)) ./ gradient(elapsed), 1000);
 
 %% find points
