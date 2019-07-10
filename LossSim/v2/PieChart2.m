@@ -26,6 +26,7 @@ load('2018_officialDay2Run3_cut.mat');
 extractVeloProf
 assert(exist('v','var')==1,'didn''t set velocity profile');
 assert(exist('I','var')==1,'didn''t set motor current profile');
+time = cumtrapz(gradient(track.s)./v);
 
 %% calculate model
 args = struct('v',v,...                     % velocity (m/s)
@@ -46,32 +47,36 @@ totalEnergy = [-smooth(H2energy,15), ...
                 smooth(.5*massTotal*v.^2,9)];
 for i = 1:size(totalEnergy,2)
     totalPower(:,i) = -gradient(totalEnergy(:,i))./(gradient(track.s)./v);
-    totalPower(:,i) = smooth(totalPower(:,i),5);
+%     totalPower(:,i) = smooth(totalPower(:,i),5);
 end
 totalPower(:,1) = circshift(totalPower(:,1),-8); % sketchy time offset
-totalPower(:,2) = circshift(totalPower(:,2),3)+1.1;
+totalPower(:,2) = circshift(totalPower(:,2),3);
+
+H2powerloss = totalPower(:,1) - H2Epower;
+H2powerloss = smooth(H2powerloss,100);
 
 %% plotting
 set(groot, 'defaultAxesTickLabelInterpreter','latex');
 set(groot, 'defaultLegendInterpreter','latex');
 set(groot, 'defaultTextInterpreter','latex');
-order = [8,2,4,5,1,6,7,3];
+order = [7,2,4,5,1,6,3];
 assert(all(sort(order)==1:size(totalLossesVals,2)),'invalid order!');
 
 figure(1);clf;
 colormap jet
 % dt = track.s ./ track.v
 plot(cumtrapz(gradient(track.s)./v), smooth(sum(totalPower,2),9),'k-',...
-    'LineWidth',1,'DisplayName','World record run data');
-hold on;
+    'LineWidth',1,'DisplayName','World record run data'); hold on;
+% plot(time, H2powerloss,'b-','LineWidth',1);
 area(cumtrapz(gradient(track.s)./v), totalLossesVals(:,order) .* v,'FaceColor','flat','FaceAlpha',0.75);
-xlabel('Time (s)'); ylabel('Power (W)'); title('Power Loss Breakdown - Model and Experimental Data'); grid on;
-legend('World record run data',totalLossesLabels{order})
+xlabel('Time since lap start (s)'); ylabel('Power (W)'); title('Power Loss Breakdown - Model and Experimental Data'); grid on;
+legend('World record run power loss',totalLossesLabels{order})
 xlim([0,trapz(gradient(track.s)./v)]); ylim([0,80]);
-% annotation('textarrow',[.45,.57],[.75,.56],'String','4 turns per lap')
-% annotation('arrow',[.455,.6],[.76,.68]);
-% annotation('arrow',[.33,.245],[.75,.61]);
-% annotation('arrow',[.325,.21],[.76,.62]);
+textloc = [0.3,0.8];
+annotation('textarrow',[textloc(1),.57],[textloc(2),.55],'String','4 turns per lap','TextBackgroundColor','w','TextMargin',1)
+annotation('arrow',[textloc(1),.6],[textloc(2),.68]);
+annotation('arrow',[textloc(1),.245],[textloc(2),.525]);
+annotation('arrow',[textloc(1),.21],[textloc(2),.535]);
 figure(4);clf;
 plot(totalPower)
 
@@ -85,7 +90,6 @@ xlim([0,track.s(end)]);
 %% statistics
 totalPowerData = sum(totalPower,2);
 totalPowerModel = sum(totalLossesVals,2).*v;
-time = cumtrapz(gradient(track.s)./v);
 EData = trapz(time,totalPowerData);
 EModel = trapz(time,totalPowerModel);
 error = abs(EModel - EData) ./ EData;
@@ -93,6 +97,6 @@ RMSerror = sqrt(mean((totalPowerData-totalPowerModel).^2));
 fprintf('%% Error = %.1f%%\n',error*100);
 fprintf('RMSerror = %.3fW\n',RMSerror);
 fprintf('         = %.1f%%\n',RMSerror/mean(totalPowerData)*100);
-38.3;
+34.149;
 EModel / time(end)
 EData / time(end)

@@ -10,8 +10,6 @@
 massCar = 26; %mass of car in kg
 massDriver = 45; %mass of driver in kg
 g = 9.807; %acceleration of gravity
-kc = 0.8e-2; %constant wheel drag term
-kq = 1.2e-5; %quadratic wheel drag term
 d_wheel = 0.475; %diameter of the wheel in m
 
 massTotal = massCar + massDriver;
@@ -22,9 +20,10 @@ totalLossesLabels = {};
 %air drag------------------------------------------------
 airCD = 0.13; %coefficient of drag
 airFrontal = 0.353; %frontal area in m^2
-airDensity = 1.184; %density of air at 25C and standard pressure, kg/m^3
+airCdA = 0.0438;
+airDensity = 1.225; %density of air at 25C and standard pressure, kg/m^3
 
-airForce = @(v,vw) 0.5 * airCD * airDensity * airFrontal * (v+vw).^2;
+airForce = @(v,vw) 0.5 * airCdA * airDensity * (v+vw).^2;
 airPower = @(v) airForce * v;
 
 totalLosses{end+1} = @(args) airForce(args.v,args.vw);
@@ -39,7 +38,7 @@ totalLosses{end+1} = @(args) rrForce(args.v);
 totalLossesLabels{end+1} = 'Tire rolling resistance';
 
 %cornering losses----------------------------------------
-ca = 100; %tire cornering stiffness, newtons per degree
+ca = 120; %tire cornering stiffness, newtons per degree
 trackLength = 1947.1; %track length in meters. Galot raceway in Benson, NC
 
 alpha = @(v, kappa) (massTotal .* v.^2 ./ kappa) ./ ca; %tire slip angle, degrees
@@ -51,13 +50,16 @@ totalLosses{end+1} = @(args) corneringDragForce(args.v, args.kappa);
 totalLossesLabels{end+1} = 'Tire cornering losses';
 
 %wheel air drag------------------------------------------
-wheelOmega = @(v) v / (d_wheel / 2);
-wheelAirLoss = @(v) 3 * kq * wheelOmega(v) .^ 3; %three wheels in the car
+wheelDia = 0.475; %diameter of the wheel in m
+wheelOmega = @(v) v / (wheelDia / 2);
+wheelCdA = 1.1e-3;
+wheelAirLoss = @(v) 3 * 0.5 * airDensity * v.^3 * wheelCdA; %three wheels in the car
 
 totalLosses{end+1} = @(args) wheelAirLoss(args.v) ./ args.v;
 totalLossesLabels{end+1} = 'Internal wheel air drag';
 %bearing drag--------------------------------------------
-bearingLoss = @(v) 3 * kc * wheelOmega(v); %three wheels in the car
+Tb = 4.9e-3; %bearing frictional moment, Nm
+bearingLoss = @(v) 3 * v * Tb / (wheelDia/2); %three wheels in the car
 
 totalLosses{end+1} = @(args) bearingLoss(args.v) ./ args.v;
 totalLossesLabels{end+1} = 'Wheel bearing drag';
@@ -74,11 +76,12 @@ motorWindingInductance = 0.160e-3 * 1.2;
 motorKv = 189;
 motorKt = 1./(motorKv*2*pi/60);
 load nonElectricalLosses
+PvsRPM = PvsERPM .* 2.^(3:-1:0);
 
 motorTorque = @(motorCurrent) (motorCurrent-.25)*motorKt;
 
 motorResistanceLoss = @(motorCurrent) motorWindingResistance * motorCurrent.^2;
-motorNoLoadLoss = @(v,motorCurrent) polyval(PvsERPM,motorRPM(v,motorCurrent)*2);
+motorNoLoadLoss = @(v,motorCurrent) polyval(PvsRPM,motorRPM(v,motorCurrent));
 motorControllerLoss = 0.6;
 motorFakeLoss = @(v,motorCurrent)  6e-3 * motorTorque(motorCurrent).^2.*motorRPM(v,motorCurrent);
 motorTotalLoss = @(v,motorCurrent) ...
@@ -93,12 +96,12 @@ totalLossesLabels{end+1} = 'Motor losses';
 % motorEff = @(v) 1 - (motorTotalLoss(v)) / sum(totalLosses);
 %chain losses--------------------------------------------
 
-chainPower_0 = 3.0;
-chainRPM_0 = 2600;
-
-chainLoss = @(v,motorCurrent) chainPower_0 * motorRPM(v,motorCurrent) / chainRPM_0;
-totalLosses{end+1} = @(args) chainLoss(args.v,args.motorCurrent) ./ args.v;
-totalLossesLabels{end+1} = 'Chain losses';
+% chainPower_0 = 3.0;
+% chainRPM_0 = 2600;
+% 
+% chainLoss = @(v,motorCurrent) chainPower_0 * motorRPM(v,motorCurrent) / chainRPM_0;
+% totalLosses{end+1} = @(args) chainLoss(args.v,args.motorCurrent) ./ args.v;
+% totalLossesLabels{end+1} = 'Chain losses';
 
 % figure;
 % 

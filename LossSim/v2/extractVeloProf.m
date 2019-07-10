@@ -30,6 +30,7 @@ totalFlow = data(:, 16);
 instantEff = data(:, 17);
 h2Energy = totalFlow .* 1000 .* 119.93;
 h2Power = smooth(gradient(h2Energy)./gradient(elapsed),50);
+h2EPower = vFC.*iFC;
 % SCenergy = .5*191*SCvoltage.^2;
 SCenergy = cumtrapz(elapsed,vFC.*iFC - power);
 FCloss = smooth((gradient(h2Energy) - gradient(eFC)) ./ gradient(elapsed), 1000);
@@ -82,7 +83,9 @@ Inew = zeros(length(track.x),numLaps);
 FClossnew = zeros(length(track.x),numLaps);
 H2powernew = zeros(length(track.x),numLaps);
 H2energynew = zeros(length(track.x),numLaps);
+H2Epowernew = zeros(length(track.x),numLaps);
 SCenergynew = zeros(length(track.x),numLaps);
+Eenergynew = zeros(length(track.x),numLaps);
 [sun,iun] = unique(s);
 for i = 1:numLaps
     snew(:,i) = track.s * ((s(lapInds(i+1))-s(lapInds(i))) / track.totalS) + s(lapInds(i));
@@ -93,7 +96,9 @@ for i = 1:numLaps
     FClossnew(:,i) = spline(sun,FCloss(iun), snew(:,i));
     H2powernew(:,i) = spline(sun,h2Power(iun), snew(:,i));
     H2energynew(:,i) = spline(sun,h2Energy(iun), snew(:,i));
+    H2Epowernew(:,i) = spline(sun,h2EPower(iun), snew(:,i));
     SCenergynew(:,i) = spline(sun,SCenergy(iun), snew(:,i));
+    Eenergynew(:,i) = spline(sun,energy(iun), snew(:,i));
 end
 
 figure(4);clf;
@@ -106,12 +111,15 @@ v = mean(vnew(:,inds),2);
 I = mean(Inew(:,inds),2);
 FCloss = mean(FClossnew(:,inds),2);
 H2power = mean(H2powernew(:,inds),2);
+H2Epower = mean(H2Epowernew(:,inds),2);
 for i = 1:numLaps
     H2energygrad(:,i) = gradient(H2energynew(:,i));
     SCenergygrad(:,i) = gradient(SCenergynew(:,i));
+    Eenergygrad(:,i) = gradient(Eenergynew(:,i));
 end
 H2energy = cumtrapz(mean(H2energygrad(:,inds),2));
 SCenergy = cumtrapz(mean(SCenergygrad(:,inds),2));
+Eenergy = cumtrapz(mean(Eenergygrad(:,inds),2));
 % ind = 1;
 % v = vnew(:,ind);
 % I = Inew(:,ind);

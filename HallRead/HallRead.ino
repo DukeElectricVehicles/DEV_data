@@ -73,10 +73,16 @@ volatile bool printHallTimings = false;
 volatile uint8_t hallPos = 0;
 
 volatile int32_t tachometer = 0;
+#define SPEED_MAWINDOW 3
+volatile uint32_t tickTimes[SPEED_MAWINDOW];
+volatile uint16_t tickTimesInd = 0;
+volatile uint32_t curTickTime100 = 0;
 static const uint8_t hallOrder[8] = {255, 5, 1, 0, 3, 4, 2, 255}; // mitsuba
 #include "Metro.h"
 Metro tachPrintTimer(10);
+Metro speedPrintTimer(100);
 bool printTach = false;
+bool printSpeed = false;
 
 #ifdef AUTODETECT
 extern bool detectingHalls;
@@ -176,6 +182,11 @@ void loop() {
     Serial.print('\t');
     Serial.println(tachometer);
   }
+  if (speedPrintTimer.check() && printSpeed){
+    Serial.print(micros());
+    Serial.print('\t');
+    Serial.println(1000000.0 * SPEED_MAWINDOW / curTickTime100);
+  }
 }
 
 void hallISR()
@@ -189,6 +200,11 @@ void hallISR()
   uint8_t prevHallPos = hallPos;
   hallPos = (out3 << 2) | (out2 << 1) | (out1);
   tachometer += (hallOrder[hallPos] - hallOrder[prevHallPos] + 15) % 6 - 3;
+  if (hallPos == 3) {
+    curTickTime100 = micros() - tickTimes[tickTimesInd];
+    tickTimes[tickTimesInd] += curTickTime100;
+    tickTimesInd = (tickTimesInd+1) % SPEED_MAWINDOW;
+  }
 
   /*Serial.print(out3);
   Serial.print(out2);
@@ -222,6 +238,7 @@ void hallISR()
 void printInstructions(){
   Serial.println("h: print this help menu");
   Serial.println("t: toggle printing tachometer");
+  Serial.println("s: toggle printing speed");
   Serial.println("H: toggle printing hall timings");
   Serial.println("d: go forward and backwards in various configurations");
   Serial.println("r: make a full revolution (quickly)");
@@ -241,6 +258,9 @@ void readSerial(){
         break;
       case 't':
         printTach = !printTach;
+        break;
+      case 's':
+        printSpeed = !printSpeed;
         break;
       case 'H':
         printHallTimings = !printHallTimings;

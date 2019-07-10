@@ -4,7 +4,8 @@
 clear;
 
 % filename = '../flyingLaps3.TXT';
-filename = '../ATTEMPT3_95PSI.TXT';
+% filename = '../ATTEMPT3_95PSI.TXT';
+filename = '../2018_officialDay2Run3.TXT';
 
 %% import
 data = importdata(filename);
