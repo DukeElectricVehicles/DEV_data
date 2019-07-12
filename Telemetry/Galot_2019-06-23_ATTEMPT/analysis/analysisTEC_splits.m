@@ -197,10 +197,13 @@ plot(lon(end),lat(end),'r*');
 
 figure(4); clf;
 p1 = plot(dist, mipkwhTEC,'.');
-ylim([0 1000]); ylabel('Score');
+ylim([0 1000]); ylabel('Score (mi/kWh)'); xlabel('Distance (m)'); title('Score vs distance');
 hold on; grid on;
 plot(dist, mipkwh,'.');
-legend('Total Energy Compensation','raw');
+legend('Total Energy Compensated Score','raw score');
+for i = 1:size(windows,1)
+    plot([dist(windows(i,2)),dist(windows(i,2))],[0;1000],'k:','HandleVisibility','off');
+end
 fprintf('mipkwhTEC: %.2f\n',mipkwhTEC(end));
 
 teC = energy - te; %total energy consumed
