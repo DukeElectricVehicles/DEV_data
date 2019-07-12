@@ -58,10 +58,15 @@ energy = data(:, 5);
 dist = data(:, 6);
 dpsCurrent = data(:, 9);
 elapsed = data(:, 10) ./ 1000;
-lat = data(:, 11);
-lon = data(:, 12);
+lat = data(:, 11); lat(lat==0) = nan; lat = deleteoutliers(lat,.1,1); %lat(isnan(lat)) = mean(lat,'omitnan');
+lon = data(:, 12); lon(lon==0) = nan; lon = deleteoutliers(lon,.1,1); %lon(isnan(lon)) = mean(lon,'omitnan');
 accel = zeros(size(velo));
 deltaTE = zeros(size(velo));
+
+velo(velo==0) = velo(find(velo==0)+1);
+
+velo = gradient(dist)./gradient(elapsed);
+velo = smooth(velo,32);
 
 dist = dist - dist(1);
 energy = energy - energy(1);
@@ -80,8 +85,16 @@ omega = velo ./ (wheelDia / 2);
 omega = omega * 60 / (2*pi);
 emf = omega / kv;
 
-altRTK = lookupElev(lat, lon);
-altRTK = smooth(altRTK, 11);
+[altRTK] = lookupElev(lat, lon);
+
+figure(2);clf; scatter3(lon,lat,altRTK);
+
+lon = spline(1:length(lon),lon,1:length(lon))';% to fix nan's
+lat = spline(1:length(lat),lat,1:length(lat))';% to fix nan's
+lon = smooth(lon,10);
+lat = smooth(lat,10);
+altRTK = spline(1:length(altRTK),altRTK,1:length(altRTK))';% to fix nan's
+% altRTK = smooth(altRTK, 11);
 [x, y, z] = geodetic2ned(lat, lon, zeros(size(lat)), 35.322, -78.5111, 0, referenceEllipsoid('GRS80','m'));
 x = -x;%idk why but it works
 x(abs(x) > 3000) = 0;
@@ -90,12 +103,19 @@ y(abs(y) > 3000) = 0;
 velo = smooth(velo, 11);
 ke = 0.5 * mass .* (velo .^2);
 pe = mass * 9.8 * altRTK;
+% pe = smooth(pe,4);
+% pe = smooth(pe,50);
+% ke = smooth(ke,32);
+
+smoothsize = 20;
+
+ke = smooth(ke, smoothsize);
+pe = smooth(pe, smoothsize);
 
 te = ke + pe;
 te = te - te(1);
 mipkwhTEC = (dist ./ 1609) ./ ((energy-te) ./ 3.6e6);
 mipkwh = (dist ./ 1609) ./ ((energy) ./ 3.6e6);
-
 
 %windowPoints = PatrickWindow(velo, power, elapsed);
 % windowPoints = [];
@@ -105,8 +125,9 @@ dt = gradient(elapsed);
 de = gradient(te);
 accel = dv ./ dt;
 deltaTE = de ./ dt;
-accel = smooth(accel, ACCEL_WINDOW);
-deltaTE = smooth(deltaTE, ACCEL_WINDOW);
+% accel = smooth(accel, ACCEL_WINDOW);
+% deltaTE = smooth(deltaTE, ACCEL_WINDOW);
+
 % for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
 %    dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
 %    dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);
@@ -191,7 +212,7 @@ end
 % % end
 
 figure(1);clf;
-scatter(lon,lat); hold on;
+scatter(lon,lat,1); hold on;
 plot(lon(1),lat(1),'r*');
 plot(lon(end),lat(end),'r*');
 
@@ -209,7 +230,7 @@ fprintf('mipkwhTEC: %.2f\n',mipkwhTEC(end));
 teC = energy - te; %total energy consumed
 tpW = 20;
 totalPower = gradient(teC)./gradient(elapsed);
-totalPower = smooth(totalPower, tpW*2+1);
+% totalPower = smooth(totalPower, tpW*2+1);
 
 figure(5); clf;
 a = subplot(3, 1, 1);
@@ -231,7 +252,7 @@ xlabel('time');
 
 figure(6); clf;
 title('Power, velocity*10, motor power');
-scatter3(x, y, totalPower); hold on;
+scatter3(x, y, totalPower,1); hold on;
 % scatter3(x, y, velo * 10);
 % scatter3(x, y, power);
 zlim([-50 100]);
@@ -245,3 +266,12 @@ title('Motor Series Resistance');
 
 %figure;
 %plot(dist ./ elapsed);
+
+figure(3);clf;
+for window = windows'
+    plot(dist(window(1):window(2))-dist(window(1)),gradient(te(window(1):window(2))),'k-');hold on;
+    plot(dist(window(1):window(2))-dist(window(1)),gradient(pe(window(1):window(2))),'r-');
+    plot(dist(window(1):window(2))-dist(window(1)),3+gradient(ke(window(1):window(2))),'b-');
+end
+    legend('te','pe','ke','tenew','penew')
+    ylim([-20,20])
