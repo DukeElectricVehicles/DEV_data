@@ -4,6 +4,10 @@
 clear; close all; clc;
 %% import data
 
+set(groot, 'defaultAxesTickLabelInterpreter','latex');
+set(groot, 'defaultLegendInterpreter','latex');
+set(groot, 'defaultTextInterpreter','latex');
+
 leakRate = 0.010; %mg per sec
 
 energyDensityH2 = 119.93e3; %joules per g
@@ -45,7 +49,7 @@ lossPower = h2power - power;
 cutPlotIdx = (power > 18) | (power < 16);
 cutFitIdx = ((power > 18) | (power < 16)) & (power > 5) & (power < 40);
 
-effFitCoeffs = polyfit(power(cutFitIdx), totalEff(cutFitIdx), 3);
+%effFitCoeffs = polyfit(power(cutFitIdx), totalEff(cutFitIdx), 3);
 lossFitCoeffs = polyfit(power(cutFitIdx), lossPower(cutFitIdx), 2);
 powerOutSweep = linspace(00, 100, 100);
 
@@ -67,14 +71,14 @@ IVcutPlotIdx = ((power > 18) | (power < 16)) & (power > 1);
 scatter(power(IVcutPlotIdx), voltage(IVcutPlotIdx), 6, 'filled'); hold on;
 plot(powerOutSweep, polyval(vFitC, powerOutSweep, [], vFitMu));
 ylim([8 19]);
-ylabel("Voltage, V");
+ylabel("Voltage (V)");
 
 %plot(power, flow);
 legend('Measured', 'Fit')
 
 
 grid on;
-xlabel("Output power, watts")
+xlabel("Output power (W)")
 
 title("Horizon H-100 Stack-Only Efficiency")
 
