@@ -2,13 +2,14 @@ clear; clc; close all;
 
 ACCEL_WINDOW = 32;
 wheelRad = 0.475 / 2; %NOTE THIS IS FOR MICHELIN TIRE
+airDensity = 1.225;
 
 I = 0.570 * 0.227^2; %Michelin
 I = I + 0.020 * 0.23^2; %Sealant
 I = I + 0.380 * 0.20^2; %DX32 rim
 I = I + 0.170 * 0.13^2; %Spokes
 
-filesStruct = dir('*s*.txt');
+filesStruct = dir('*hC*.txt');
 
 for i = 1:numel(filesStruct)
     filename = filesStruct(i).name;
@@ -40,12 +41,16 @@ for i = 1:numel(filesStruct)
     plot(linearVelo, power, '.', 'DisplayName', filename); hold on;
     %plot(linearVelo, dragModel([coeffs(1), 0], velo) .* velo, 'DisplayName', 'k_c drag');
     %plot(linearVelo, dragModel([0, coeffs(2)], velo) .* velo, 'DisplayName', 'k_q drag');
-    
+    coeffs
     figure(3);
+    cdA = coeffs(2) / (0.5 * airDensity * wheelRad^3);
     
-    s = sprintf('k_c=%0.2e k_q=%0.2e', coeffs(1), coeffs(2));
+    s = sprintf('t=%0.2e cdA=%0.2e', coeffs(1), cdA);
     plot(velo, torque, '.', 'DisplayName', filename); hold on;
     plot(xspaced, dragModel(coeffs, xspaced), '.', 'DisplayName', s); hold on;
+    
+    figure(4);
+    plot(velo, dragModel(coeffs, velo), '.', 'DisplayName', filename); hold on;
 end
 
 figure(1);
@@ -67,3 +72,5 @@ ylabel('Drag torque in Nm');
 legend(gca,'show');
 xlim([0 35]);
 ylim([-0.1 0]); grid on;
+
+figure(4);
