@@ -3,7 +3,7 @@
 
 clear; clc; close all;
 
-filenames = sprintfc('../spindowns%d.TXT',3);
+filenames = sprintfc('../spindowns%d.TXT',4);
 %filenames = sprintfc('../racesim1.TXT',0);
 %filenames = sprintfc('../cornering1.TXT',0);
 
@@ -32,25 +32,10 @@ end
 %data = importdata('thirdRuns.TXT');
 %data = data(2680:end, :);
 
-ACCEL_WINDOW = 200;
+ACCEL_WINDOW = 50;
 
 %CAR MODEL---------------------------
-crr = 0.0015;
 mass = (67 + 21);
-
-densityAir = 1.225;
-cdA = 0.033;
-rollingForce = crr * mass * 9.8;
-airForce = @(v) 0.5 * cdA * densityAir * v.^2;
-
-lossPoly_aeroAndBearing = [-1.06527e-08	-6.50352e-07	-1.02305e-04	1.12781e-03];
-lossPoly_eddy = [-1.11897e-08	-5.30369e-06	-6.07395e-03	3.03073e-02] - lossPoly_aeroAndBearing;
-lossPoly_aeroAndBearing(end) = 0;
-lossPoly_eddy(end) = 0;
-PlossMag_W = @(v) -polyval(lossPoly_eddy, v / (.475/2) * 60/(2*pi));
-PlossMech_W = @(v) -polyval(lossPoly_aeroAndBearing, v / (.475/2) * 60/(2*pi));
-
-accelModel = @(v) -(rollingForce + airForce(v) + (PlossMag_W(v) / v)) / mass;
 
 %END CAR MODEL-----------------------
 
@@ -86,6 +71,7 @@ te = ke + pe;
 mipkwh = (dist ./ 1609) ./ (energy ./ 3.6e6);
 
 windowPoints = PatrickWindow(velo, power, elapsed);
+direction = zeros(size(windowPoints(:, 1)));
 % windowPoints = [];
 
 dv = gradient(velo);
@@ -95,15 +81,6 @@ accel = dv ./ dt;
 deltaTE = de ./ dt;
 accel = smooth(accel, ACCEL_WINDOW);
 deltaTE = smooth(deltaTE, ACCEL_WINDOW);
-% for i = ACCEL_WINDOW + 1: length(velo) - ACCEL_WINDOW
-%    dv = velo(i + ACCEL_WINDOW) - velo(i - ACCEL_WINDOW);
-%    dt = elapsed(i + ACCEL_WINDOW) - elapsed(i - ACCEL_WINDOW);
-%    de = te(i + ACCEL_WINDOW) - te(i - ACCEL_WINDOW);
-%    
-%    accel(i) = dv / dt;
-%    deltaTE(i) = de / dt;%power in watts
-% end
-
 accelComp = deltaTE ./ (velo * mass);
 
 %% Plot start/stop lines--------------------------------------------
@@ -112,13 +89,16 @@ plot(velo); hold on;
 for i = 1:size(windowPoints, 1) 
     start = (windowPoints(i, 1));
     stop = (windowPoints(i, 2));
+    direction(i) = x(start) > x(stop);
     
     line([start, start], [0, 10], 'Color', 'black', 'LineWidth', 3);
     line([stop, stop], [0, 10], 'Color', 'red', 'LineWidth', 3);
 end
 title('Start/Stop Lines');xlabel('ticks');ylabel('velocity (m/s)');
 ylim([0 10]); grid on;
-%accelComp = accelComp .* mass .* velo;
+
+direction(direction == 0) = -1;
+
 %% Plot decelerations------------------------------------------------
 figure(2); clf;
 for window = 1 : size(windowPoints, 1)
@@ -126,9 +106,14 @@ for window = 1 : size(windowPoints, 1)
    stop = windowPoints(window, 2);
    
    %plot(velo(start:stop), accel(start: stop), 'o','MarkerSize',2); hold on;
-   %yyaxis left
-   plot(velo(start:stop), accelComp(start: stop), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window)); hold on;
-   ylim([-0.10 0.00]); grid on;
+   
+%    if direction(window) > 0
+%        yyaxis left
+%    else
+%        yyaxis right
+%    end
+   plot(velo(start:stop), accelComp(start: stop), 'o','MarkerSize',1,'DisplayName',sprintf('window %d',window)); hold on;
+   %ylim([-0.08 0.00]); grid on;
    %yyaxis right
    %plot(velo(start:stop), smooth(deltaTE(start:stop), 50), 'o','MarkerSize',2,'DisplayName',sprintf('window %d',window));
    %ylim([-25,0]); grid on;
@@ -137,12 +122,23 @@ end
 % Plot fit
 yyaxis left
 veloSweep = linspace(0, 10, 1000);
-decelModel = accelModel(veloSweep);
+decelModel = LossModel(veloSweep, 0, 0, mass, 0.0015, 0.033);
 plot(veloSweep, decelModel, 'DisplayName','target');
 title('Acceleration vs Velocity');
 xlabel('Velocity (m/s)');ylabel('Acceleration(m/s^2)');
 legend show
 %legend('Uphill','Uphill TEC', 'Downhill', 'Downhill TEC', 'Drag model');
+
+%SOLVE
+x0 = [-4, 0.002, 0.033];
+lossSpindown = @(coeffs) lossWind(coeffs, windowPoints, direction, velo, accel, mass);
+dragCoeffs = fminsearch(lossSpindown, x0)
+%dragCoeffs = x0;
+
+decelModel = LossModel(veloSweep, dragCoeffs(1), 1, mass, dragCoeffs(2), dragCoeffs(3));
+plot(veloSweep, decelModel, 'DisplayName','upwind');
+decelModel = LossModel(veloSweep, dragCoeffs(1), -1, mass, dragCoeffs(2), dragCoeffs(3));
+plot(veloSweep, decelModel, 'DisplayName','downwind');
 
 %% Plot decel vs map
 
@@ -165,29 +161,23 @@ for window = 1 : size(windowPoints, 1)
     %xlim([35.315 35.33]);
     %ylim([-78.5135 -78.51]);
     zlim([-0.07 0]);
+    xlabel('X m'); ylabel('Y m');zlabel('Accel');
 end
 
-figure(4); clf;
-plot(mipkwh);
-ylim([0 1000]);
-hold on;
-
-totalPower = zeros(size(energy));
-teC = energy - te; %total energy consumed
-tpW = 20;
-for i = (tpW + 1):(length(totalPower) - tpW)
-   totalPower(i) = (teC(i + tpW) - teC(i - tpW)) / (elapsed(i + tpW) - elapsed(i - tpW));
+function loss = lossWind(coeffs, windowPoints, direction, velo, accel, mass)
+    loss = 0;
+    for window = 1 : size(windowPoints, 1)
+        start = windowPoints(window, 1);
+        stop = windowPoints(window, 2);
+        veloCut = velo(start:stop);
+        accelCut = accel(start: stop);
+        
+        accelPred = LossModel(veloCut, coeffs(1), direction(window), mass, coeffs(2), coeffs(3));
+        resid = (accelPred - accelCut);
+        
+        %resid(abs(resid) > 0.03) = 0;
+        
+        loss = loss + sum(resid.^2);
+    end
 end
 
-figure(5); clf;
-a = subplot(2, 1, 1);
-plot(dist, totalPower); hold on;
-plot(dist, smooth(power, 51)); grid on;
-ylim([0 150]);
-b = subplot(2, 1, 2);
-plot(dist, velo); grid on;
-linkaxes([a,b], 'x');
-
-figure(6);
-scatter3(-x, y, totalPower);
-zlim([0 100]);

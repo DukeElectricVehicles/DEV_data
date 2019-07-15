@@ -38,9 +38,9 @@ function [ windowPoints ] = PatrickWindow( velo, power, elapsed)
                 currentState = 2;
                 startPoints = [startPoints; i];
             case 2  %decelerating
-                %decel = (velo(i + 30) - velo(i+10)) / (elapsed(i + 30) - elapsed(i+10));
+                decel = (velo(i + 30) - velo(i+10)) / (elapsed(i + 30) - elapsed(i+10));
                 
-                if velo(i) < 1 || power(i+10) > 5% || decel < -0.15
+                if velo(i) < 1 || power(i+10) > 5 || decel < -0.3
                     currentState = 0;
                     stopPoints = [stopPoints; i];
                     fprintf("end decel %d\n", i);
