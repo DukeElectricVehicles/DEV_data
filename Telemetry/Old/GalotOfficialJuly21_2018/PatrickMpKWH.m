@@ -4,7 +4,7 @@ FILENAME = 'officialDay2Run3.TXT';
 
 ACCEL_WINDOW = 100;
 
-c = 200;
+c = 190;
 
 data = importdata(FILENAME);
 
@@ -104,3 +104,28 @@ ylabel('Efficiency');
 
 %figure;
 %plot(smooth(pressFC, 100), smooth(instantEff, 21), 'o');
+
+figure;
+pFC = vFC .* iFC;
+pFC = smooth(pFC, 11);
+instantEff = smooth(instantEff, 11);
+scatter(pFC, instantEff, 1); grid on; hold on;
+
+figure;
+[foo, startLap] = min(abs(dist - 2700));
+[foo, endLap] = min(abs(dist - 4700));
+lapTime = elapsed(startLap:endLap) - elapsed(startLap);
+lapPower = power(startLap:endLap);
+lapPower = smooth(lapPower, 5);
+
+plot(lapTime, lapPower, 'LineWidth',1); grid on; hold on;
+xlabel('Time, s');
+ylabel('Power, W');
+title('Motor power');
+
+iSC = iBMS - iFC;
+rSC = 10e-3;
+pSC = iSC .^2 * rSC;
+eSC = cumsum(pSC .* gradient(elapsed));
+figure;
+plot(elapsed, eSC ./ elapsed);
