@@ -5,8 +5,8 @@ clear; %clc; close all;
 
 % filenames = sprintfc('../installationLap.TXT',0);
 % filenames = sprintfc('../installationLap_cut.mat',0);
-filenames = sprintfc('../flyinglaps3_cut.mat',0);
-filenames = sprintfc('../flyinglaps2.TXT',0);
+filenames = sprintfc('../ATTEMPT3_95PSI_cut.mat',0);
+%filenames = sprintfc('../flyinglaps2.TXT',0);
 
 data = zeros(1,12);
 for i = 1:length(filenames)
