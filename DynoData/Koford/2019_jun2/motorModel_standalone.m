@@ -40,18 +40,25 @@ paramSets = table();
     modelEff(torqueVals.*RPMvals/60*2*pi > 349) = nan;
     modelEff(torqueVals > 1.01686) = nan;
     modelEff(RPMvals > 4200) = nan;
+    modelEff(V>16) = nan;
+    modelEff(torqueVals > 0.4) = nan;
+    modelEff(RPMvals > 3000) = nan;
     
     figure(1);clf;
     colormap jet
 %     pcolor(modelTorque',modelRPM',modelEff'); hold on;
 %     shading interp;
-    contourf(modelRPM',modelTorque',modelEff',200,'LineStyle','none'); hold on;
+    contourf(modelRPM',modelTorque',modelEff',200,'LineStyle','none','DisplayName','Efficiency'); hold on;
+    plot(RPMvals, 23./(RPMvals*2*pi/60),'k:','LineWidth',3)
     [C,h] = contour(modelRPM',modelTorque',modelEff',[.1:.1:.7,.75,.8,.85:.01:.9],'LineColor','k');
-    clabel(C,h,'LabelSpacing',200);
+    clabel(C,h,'LabelSpacing',450);
     ylabel('Torque (Nm)');
     xlabel('Speed (RPM)');
-    legend('Efficiency');
+    legend('Efficiency','Average Power Curve');
+    xlim([0,3000])
+    ylim([0,0.4])
     title('Motor Efficiency Map');
+    set(gcf,'Position',[0,0,560,420]/1.5)
     
     figure(2);clf;
     colormap jet
