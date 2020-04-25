@@ -4,7 +4,7 @@
 clear; clc; close all;
 
 % filenames = sprintfc('../spindowns%d.TXT',4);
-filenames = sprintfc('../laps3.TXT',0);
+filenames = sprintfc('../laps4.TXT',0);
 %filenames = sprintfc('../cornering1.TXT',0);
 
 data = zeros(1,12);

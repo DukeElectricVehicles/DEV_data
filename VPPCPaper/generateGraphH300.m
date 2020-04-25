@@ -68,10 +68,10 @@ ylabel("Efficiency");
 
 yyaxis right
 IVcutPlotIdx = ((power > 18) | (power < 16)) & (power > 1);
-scatter(power(IVcutPlotIdx), voltage(IVcutPlotIdx) / 20 * 40, 6, 'filled'); hold on;
+scatter(power(IVcutPlotIdx), flow(IVcutPlotIdx), 6, 'filled'); hold on;
 %plot(powerOutSweep, polyval(vFitC, powerOutSweep, [], vFitMu));
 %ylim([8 19]);
-ylabel("Voltage (V)");
+ylabel("Flow (mg/sec)");
 
 %plot(power, flow);
 %legend('Measured', 'Fit')
@@ -82,12 +82,31 @@ xlabel("Output power (W)")
 
 title("Horizon H-100 Stack-Only Efficiency")
 
-% figure;
-% plot(power, lossPower); hold on;
-% plot(powerOutSweep, polyval(lossFitCoeffs, powerOutSweep));
+GperM3 = 84.1; % grams per m^3 of H2 at 15C
+flowgsec = flow / 1000;
+flowm3min = flowgsec / GperM3 * 60;
+flowmlmin = flowm3min * 1e6;
 
+figure;
+
+yyaxis left
+scatter(power(IVcutPlotIdx) * 3, flowmlmin(IVcutPlotIdx) * 3, 6, 'filled'); hold on;
+
+ylabel('Flowrate in ml/min');
+title("Extrapolated flowrate of H-300 from H-100")
+
+
+grid on;
+xlabel("Output power (W)")
+yyaxis right
+
+
+scatter(power(cutPlotIdx) * 3, totalEff(cutPlotIdx), 6, 'filled'); hold on;
+%scatter(powerOutSweep, polyval(effFitCoeffs, powerOutSweep), 10, 'filled'); hold on;
+%plot(powerOutSweep, effLossModel); hold on;
+ylim([0.45 0.75]);
+
+ylabel("Efficiency");
 %figure();
 %plot(flowByCurrent + leakRate); hold on;
 %plot(flow);
-
-save('fcFit','vFitC','vFitMu', 'lossFitCoeffs');
